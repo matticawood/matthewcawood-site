@@ -8,68 +8,162 @@
 <meta property="og:title" content="Book a Lesson — Matthew Cawood">
 <link rel="icon" href="/assets/img/icon.webp">
 <link rel="stylesheet" href="/assets/css/site.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
 <style>
-  .bk{max-width:920px;margin:0 auto;padding:0 22px}
+  /* ── dark premium theme (scoped overrides of the site tokens) ── */
+  :root{
+    --bg:#0a0a0b; --bg2:#101013; --surface:#141416; --surface-2:#1b1b1f; --surface-3:#222228;
+    --border:#26262b; --border-2:#34343b; --text:#f2f1ef; --heading:#ffffff;
+    --muted:#9a9aa2; --muted-2:#6c6c74; --accent:#f5c518; --gold-dim:#e8c43a; --gold-deep:#caa413;
+    --serif:"Fraunces",Georgia,serif;
+  }
+  body{background:var(--bg);color:var(--text)}
+  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:radial-gradient(56% 38% at 50% -6%, rgba(245,197,24,.07), transparent 62%)}
+  header.site, section, footer.site{position:relative;z-index:1}
+  /* chrome → dark */
+  header.site{background:rgba(10,10,11,.72)!important;-webkit-backdrop-filter:saturate(150%) blur(12px);backdrop-filter:saturate(150%) blur(12px);border-bottom:1px solid var(--border)!important}
+  header.site .brand span{color:#fff} header.site .brand small{color:var(--muted-2)}
+  .nav-links a{color:#e9e9ec!important} .nav-links a:hover{background:rgba(255,255,255,.06)!important}
+  .nav-links a.cta{background:var(--accent)!important;color:#1a1400!important} .nav-links a.cta:hover{background:var(--gold-dim)!important}
+  .nav-toggle svg{stroke:#fff}
+  @media(max-width:820px){.nav-links{background:var(--bg2)!important;border-bottom:1px solid var(--border)!important}}
+  footer.site{background:#070708;border-top:1px solid var(--border)}
+  footer.site .brand-f{color:#fff} footer.site h4{color:#fff} footer.site a{color:#b7b7be} footer.site a:hover{color:var(--accent)}
+  footer.site .legal{border-top-color:var(--border);color:#74747b}
+  /* intro */
+  .page-intro{padding:62px 0 6px}
+  .page-intro .eyebrow{color:var(--gold-deep)}
+  .page-intro h1{font-family:var(--serif);font-weight:600;color:#fff;letter-spacing:-.015em;font-size:clamp(2.7rem,5.4vw,4rem);line-height:1.04}
+  .page-intro p{color:var(--muted)}
+  .assure{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;margin:24px 0 2px;color:var(--muted);font-size:.85rem}
+  .assure span{display:inline-flex;align-items:center;gap:8px}
+  .assure svg{width:16px;height:16px;stroke:var(--gold-deep);fill:none;stroke-width:1.7}
+
+  .bk{max-width:980px;margin:0 auto;padding:0 22px}
   .screen{display:none}
-  .screen.on{display:block;animation:fade .25s ease}
-  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  .prod-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  @media(max-width:640px){.prod-grid{grid-template-columns:1fr}}
-  .prod{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--surface);border:1px solid var(--border);
-    border-radius:14px;padding:22px;cursor:pointer;font-family:inherit;transition:transform .12s,border-color .2s,box-shadow .2s}
-  .prod:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 16px 38px -28px rgba(66,56,46,.45)}
-  .prod .pt{font-weight:800;color:var(--heading);font-size:1.12rem}
-  .prod .pp{color:var(--gold-dim);font-weight:800}
-  .prod .pd{color:var(--muted);font-size:.9rem}
-  .pill-link{display:inline-flex;align-items:center;gap:7px;margin-top:22px;color:var(--gold-dim);font-weight:700;cursor:pointer;background:none;border:none;font-family:inherit;font-size:.95rem}
-  .back{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-weight:600;cursor:pointer;background:none;border:none;font-family:inherit;font-size:.9rem;margin-bottom:18px}
+  .screen.on{display:block;animation:fade .3s cubic-bezier(.16,1,.3,1)}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  h2{font-family:var(--serif);font-weight:600;color:#fff;letter-spacing:-.01em}
+
+  /* ── session products ── */
+  .sessions{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:760px){.sessions{grid-template-columns:1fr}}
+  .session{position:relative;display:flex;flex-direction:column;text-align:left;cursor:pointer;font-family:inherit;
+    background:linear-gradient(180deg,var(--surface),#0f0f11);border:1px solid var(--border);border-radius:18px;
+    padding:26px 24px 22px;transition:transform .15s cubic-bezier(.16,1,.3,1),border-color .2s,box-shadow .25s}
+  .session:hover{transform:translateY(-4px);border-color:var(--border-2);box-shadow:0 30px 60px -34px rgba(0,0,0,.9)}
+  .session .ic{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+    background:rgba(245,197,24,.08);border:1px solid rgba(245,197,24,.16);margin-bottom:18px}
+  .session .ic svg{width:23px;height:23px;stroke:var(--gold-dim);fill:none;stroke-width:1.7}
+  .session .st{font-weight:700;font-size:1.12rem;color:#fff;letter-spacing:-.01em}
+  .session .sd{color:var(--muted);font-size:.9rem;margin-top:6px;line-height:1.5;flex:1}
+  .session .srow{display:flex;align-items:baseline;justify-content:space-between;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
+  .session .sp{font-family:var(--serif);font-weight:600;font-size:1.7rem;color:#fff}
+  .session .sp small{font-size:.8rem;color:var(--muted-2);font-family:inherit;font-weight:600}
+  .session .go{font-size:.82rem;font-weight:700;color:var(--gold-dim);letter-spacing:.02em}
+  .session.feat{border-color:rgba(245,197,24,.5);background:linear-gradient(180deg,#1a1710,#0f0f11);
+    box-shadow:0 0 0 1px rgba(245,197,24,.12),0 36px 70px -40px rgba(245,197,24,.18)}
+  .session.feat:hover{border-color:var(--accent)}
+  .tag{position:absolute;top:-11px;left:24px;background:var(--accent);color:#1a1400;font-size:.62rem;font-weight:800;
+    letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:100px}
+
+  /* ── packages banner (on the chooser) ── */
+  .pkg-banner{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:18px;
+    background:linear-gradient(110deg,#16140d,#121214);border:1px solid var(--border-2);border-radius:18px;padding:24px 26px;
+    position:relative;overflow:hidden;cursor:pointer;transition:border-color .2s,transform .15s}
+  .pkg-banner::after{content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(245,197,24,.12),transparent 70%)}
+  .pkg-banner:hover{border-color:rgba(245,197,24,.45);transform:translateY(-2px)}
+  .pkg-banner .pb-l{position:relative}
+  .pkg-banner h3{font-family:var(--serif);font-weight:600;font-size:1.4rem;color:#fff;margin:0}
+  .pkg-banner p{color:var(--muted);font-size:.92rem;margin:5px 0 0}
+  .pkg-banner .pb-cta{position:relative;flex-shrink:0;display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#1a1400;font-weight:800;border-radius:11px;padding:13px 22px;font-size:.95rem}
+  .pkg-banner .save{color:var(--gold-dim);font-weight:800}
+
+  .redeem-chip{display:inline-flex;align-items:center;gap:9px;margin:26px auto 0;color:var(--text);background:var(--surface);
+    border:1px solid var(--border);border-radius:100px;padding:11px 20px;font-weight:600;font-size:.9rem;cursor:pointer;font-family:inherit;transition:border-color .2s}
+  .redeem-chip:hover{border-color:var(--accent);color:#fff}
+  .redeem-chip b{color:var(--gold-dim);font-weight:700}
+
+  .back{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-weight:600;cursor:pointer;background:none;border:none;font-family:inherit;font-size:.9rem;margin-bottom:20px}
   .back:hover{color:var(--gold-dim)}
-  .panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px}
+
+  /* ── package tier cards ── */
+  .pkg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:stretch}
+  @media(max-width:820px){.pkg-grid{grid-template-columns:1fr;max-width:420px;margin:0 auto}}
+  .pkg{position:relative;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--surface),#0f0f11);
+    border:1px solid var(--border);border-radius:20px;padding:28px 26px;transition:transform .15s,border-color .2s,box-shadow .25s}
+  .pkg:hover{transform:translateY(-4px);box-shadow:0 36px 70px -42px rgba(0,0,0,.9)}
+  .pkg.best{border-color:rgba(245,197,24,.55);background:linear-gradient(180deg,#1a1710,#0f0f11);
+    box-shadow:0 0 0 1px rgba(245,197,24,.14),0 40px 80px -44px rgba(245,197,24,.22)}
+  .pkg .qty{font-weight:700;color:#fff;font-size:1.06rem}
+  .pkg .price{font-family:var(--serif);font-weight:600;font-size:2.7rem;color:#fff;line-height:1;margin:14px 0 2px}
+  .pkg .per{color:var(--muted);font-size:.86rem}
+  .pkg .save{display:inline-block;margin-top:14px;background:rgba(245,197,24,.12);border:1px solid rgba(245,197,24,.28);
+    color:var(--gold-dim);font-weight:800;font-size:.76rem;letter-spacing:.02em;padding:5px 11px;border-radius:100px}
+  .pkg ul{list-style:none;padding:0;margin:20px 0 22px;display:flex;flex-direction:column;gap:11px;flex:1}
+  .pkg li{display:flex;gap:10px;align-items:flex-start;color:#cfcfd4;font-size:.9rem;line-height:1.45}
+  .pkg li svg{flex:0 0 auto;width:16px;height:16px;stroke:var(--gold-dim);fill:none;stroke-width:2.4;margin-top:2px}
+  .pkg .choose{width:100%;text-align:center;border-radius:12px;padding:13px;font-weight:800;font-size:.95rem;cursor:pointer;font-family:inherit;
+    background:var(--surface-3);color:#fff;border:1px solid var(--border-2);transition:background .2s,transform .12s}
+  .pkg .choose:hover{transform:translateY(-1px)}
+  .pkg.best .choose{background:var(--accent);color:#1a1400;border-color:var(--accent)}
+  .pkg-reassure{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-top:26px;color:var(--muted);font-size:.84rem}
+  .pkg-reassure span{display:inline-flex;align-items:center;gap:7px}
+  .pkg-reassure svg{width:15px;height:15px;stroke:var(--gold-deep);fill:none;stroke-width:2}
+
+  .panel{background:linear-gradient(180deg,var(--surface),#0f0f11);border:1px solid var(--border);border-radius:18px;padding:24px}
   /* calendar */
-  .cal-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-  .cal-top button{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;width:34px;height:34px;cursor:pointer;color:var(--heading);font-size:1rem}
-  .cal-top button:disabled{opacity:.35;cursor:default}
-  .cal-range{font-weight:700;color:var(--heading)}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-  .cal-dname{text-align:center;font-size:.6rem;font-weight:800;letter-spacing:.06em;color:var(--muted-2);padding:6px 0}
-  .cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:9px;font-size:.9rem;font-weight:600;color:var(--text)}
+  .cal-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .cal-top button{background:var(--surface-2);border:1px solid var(--border);border-radius:9px;width:36px;height:36px;cursor:pointer;color:#fff;font-size:1rem;transition:border-color .2s}
+  .cal-top button:hover:not(:disabled){border-color:var(--accent)}
+  .cal-top button:disabled{opacity:.3;cursor:default}
+  .cal-range{font-weight:700;color:#fff;font-size:1.02rem}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+  .cal-dname{text-align:center;font-size:.58rem;font-weight:800;letter-spacing:.08em;color:var(--muted-2);padding:6px 0}
+  .cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:10px;font-size:.9rem;font-weight:600;color:var(--text)}
   .cal-day.empty{visibility:hidden}
-  .cal-day.past,.cal-day.noSlots{color:var(--muted-2);opacity:.5}
-  .cal-day.loading{color:var(--muted-2);opacity:.6}
+  .cal-day.past,.cal-day.noSlots{color:var(--muted-2);opacity:.45}
+  .cal-day.loading{color:var(--muted-2);opacity:.55}
   .cal-day.avail{background:var(--surface-2);cursor:pointer;border:1px solid transparent}
-  .cal-day.avail:hover{border-color:var(--accent)}
-  .cal-day.selected{background:var(--accent);color:#3a2f12;font-weight:800}
-  .slots-wrap{margin-top:4px}
-  .slots-day-lbl{font-weight:700;color:var(--heading);margin-bottom:10px}
-  .slots-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
-  .slot-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:10px 8px;cursor:pointer;font-family:inherit;font-weight:700;color:var(--heading);font-size:.92rem}
+  .cal-day.avail:hover{border-color:var(--accent);background:var(--surface-3)}
+  .cal-day.selected{background:var(--accent);color:#1a1400;font-weight:800}
+  .slots-wrap{margin-top:6px}
+  .slots-day-lbl{font-weight:700;color:#fff;margin:16px 0 12px}
+  .slots-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:9px}
+  .slot-btn{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 8px;cursor:pointer;font-family:inherit;font-weight:700;color:#fff;font-size:.92rem;transition:border-color .2s}
   .slot-btn:hover{border-color:var(--accent)}
-  .slot-btn.sel{background:var(--accent);border-color:var(--accent);color:#3a2f12}
+  .slot-btn.sel{background:var(--accent);border-color:var(--accent);color:#1a1400}
   .slot-empty{color:var(--muted);font-size:.9rem;padding:14px 0}
-  .spin{width:15px;height:15px;border:2px solid var(--border);border-top-color:var(--gold-dim);border-radius:50%;display:inline-block;animation:sp .7s linear infinite;vertical-align:-2px}
-  .spin.dk{border-color:rgba(0,0,0,.25);border-top-color:#3a2f12}
+  .spin{width:15px;height:15px;border:2px solid var(--border-2);border-top-color:var(--gold-dim);border-radius:50%;display:inline-block;animation:sp .7s linear infinite;vertical-align:-2px}
+  .spin.dk{border-color:rgba(0,0,0,.28);border-top-color:#1a1400}
   @keyframes sp{to{transform:rotate(360deg)}}
   /* details form */
-  .field label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:14px 0 5px}
-  .field input,.field textarea{width:100%;border:1.5px solid var(--border);background:#fff;border-radius:10px;padding:12px 14px;font-size:1rem;font-family:inherit;color:var(--text)}
-  .field input:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
-  .field textarea{min-height:90px;resize:vertical}
-  .det-summary{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:6px}
-  .det-summary .dt{font-weight:800;color:var(--heading)}
-  .det-summary .dm{color:var(--muted);font-size:.92rem;margin-top:2px}
-  .err{color:#c0392b;font-size:.9rem;margin-top:12px;display:none}
-  .file-label{display:flex;align-items:center;gap:10px;border:1.5px dashed var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;color:var(--muted);font-size:.9rem;margin-top:5px}
-  .file-label.has{border-style:solid;color:var(--heading)}
-  .credit-note{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;color:var(--heading);font-weight:600}
-  .result{text-align:center;padding:30px 0}
-  .result .big{font-size:2.6rem;margin-bottom:10px}
+  .field label{display:block;font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:16px 0 6px}
+  .field input,.field textarea{width:100%;border:1px solid var(--border);background:var(--surface-2);border-radius:11px;padding:13px 15px;font-size:1rem;font-family:inherit;color:var(--text)}
+  .field input::placeholder,.field textarea::placeholder{color:var(--muted-2)}
+  .field input:focus,.field textarea:focus{outline:none;border-color:var(--accent);background:var(--surface-3)}
+  .field textarea{min-height:96px;resize:vertical;line-height:1.6}
+  .det-summary{background:linear-gradient(110deg,#16140d,var(--surface-2));border:1px solid var(--border-2);border-radius:14px;padding:16px 18px;margin-bottom:6px}
+  .det-summary .dt{font-weight:700;color:#fff}
+  .det-summary .dm{color:var(--gold-dim);font-size:.92rem;margin-top:3px}
+  .err{color:#ff7a6b;font-size:.9rem;margin-top:12px;display:none}
+  .file-label{display:flex;align-items:center;gap:10px;border:1px dashed var(--border-2);border-radius:11px;padding:13px 15px;cursor:pointer;color:var(--muted);font-size:.9rem;margin-top:6px}
+  .file-label.has{border-style:solid;color:#fff}
+  .narrow-form{max-width:580px;margin:0 auto}
+  .result{text-align:center;padding:40px 22px}
+  .result .big{font-size:2.8rem;margin-bottom:14px}
+  .result h2{font-size:1.9rem}
+  .btn-ghost{background:transparent;color:#fff;border:1px solid var(--border-2)}
+  .btn-ghost:hover{border-color:var(--accent);background:rgba(255,255,255,.04)}
 </style>
 </head>
 <body>
 
 <header class="site"><div class="wrap nav">
   <a class="brand" href="/">
-    <svg class="brand-mark" viewBox="0 0 40 40" width="34" height="34" aria-hidden="true"><rect x="1" y="1" width="38" height="38" rx="10" fill="#fff" stroke="#e0d5c8"/><text x="20" y="26.5" text-anchor="middle" font-family="Georgia, serif" font-size="17" font-weight="700" fill="#42382e" letter-spacing="-1">MC</text></svg>
+    <svg class="brand-mark" viewBox="0 0 40 40" width="34" height="34" aria-hidden="true"><rect x="1" y="1" width="38" height="38" rx="10" fill="#141416" stroke="#3a3320"/><text x="20" y="26.5" text-anchor="middle" font-family="Georgia, serif" font-size="17" font-weight="700" fill="#f5c518" letter-spacing="-1">MC</text></svg>
     <span>Matthew Cawood<small>Pianist · Producer · Educator</small></span>
   </a>
   <button class="nav-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
@@ -79,28 +173,64 @@
   </nav>
 </div></header>
 
-<section class="page-intro"><div class="wrap"><p class="eyebrow">1:1 with Matthew</p><h1>Book a Lesson</h1>
-  <p>Online clinics, full lessons and discounted packages — pick what suits, choose a time, and you're booked.</p></div></section>
+<section class="page-intro"><div class="wrap">
+  <p class="eyebrow">1:1 with Matthew</p><h1>Book a Lesson</h1>
+  <p>Online clinics, full lessons and discounted packages — pick what suits, choose a time, and you're booked.</p>
+  <div class="assure">
+    <span><svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/></svg>Online via Zoom</span>
+    <span><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M9 3v4M15 3v4"/></svg>Pick any free slot</span>
+    <span><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Secure checkout</span>
+  </div>
+</div></section>
 
 <section style="padding-top:14px;padding-bottom:90px"><div class="bk">
 
   <!-- PRODUCTS -->
   <div class="screen on" id="screen-products">
-    <div class="prod-grid">
-      <button class="prod" onclick="pickSingle('c20')"><span class="pt">20-minute clinic</span><span class="pp">£18</span><span class="pd">A quick question or technique fix.</span></button>
-      <button class="prod" onclick="pickSingle('c30')"><span class="pt">30-minute clinic</span><span class="pp">£30</span><span class="pd">A deeper dive into a piece or concept.</span></button>
-      <button class="prod" onclick="pickSingle('l60')"><span class="pt">1-hour lesson</span><span class="pp" id="t-l60">£49</span><span class="pd">A full lesson tailored to your goals.</span></button>
-      <button class="prod" onclick="show('screen-packages')"><span class="pt">Lesson packages</span><span class="pp">Save up to 15%</span><span class="pd">Buy 3, 6 or 12 one-hour lessons.</span></button>
+    <div class="sessions">
+      <button class="session" onclick="pickSingle('c20')">
+        <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 1.5"/></svg></div>
+        <div class="st">20-minute clinic</div>
+        <div class="sd">A quick question, a tricky bar, or a fast technique fix.</div>
+        <div class="srow"><div class="sp">£18</div><div class="go">Choose →</div></div>
+      </button>
+      <button class="session" onclick="pickSingle('c30')">
+        <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v4.5l3.5 2"/></svg></div>
+        <div class="st">30-minute clinic</div>
+        <div class="sd">A deeper dive into a piece, passage or concept.</div>
+        <div class="srow"><div class="sp">£30</div><div class="go">Choose →</div></div>
+      </button>
+      <button class="session feat" onclick="pickSingle('l60')">
+        <span class="tag">Most popular</span>
+        <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2.5"/></svg></div>
+        <div class="st">1-hour lesson</div>
+        <div class="sd">A full, tailored lesson — proper time to make real progress.</div>
+        <div class="srow"><div class="sp" id="t-l60">£49</div><div class="go">Choose →</div></div>
+      </button>
     </div>
-    <button class="pill-link" onclick="show('screen-redeem-email')">Already have a package? Book a lesson →</button>
+
+    <div class="pkg-banner" onclick="show('screen-packages')">
+      <div class="pb-l">
+        <h3>Lesson packages</h3>
+        <p>Bundle your one-hour lessons and <span class="save">save up to £68</span> — book each one whenever you like.</p>
+      </div>
+      <span class="pb-cta">View packages →</span>
+    </div>
+
+    <div style="text-align:center"><button class="redeem-chip" onclick="show('screen-redeem-email')">Already bought a package? <b>Book a lesson →</b></button></div>
   </div>
 
   <!-- PACKAGES -->
   <div class="screen" id="screen-packages">
     <button class="back" onclick="show('screen-products')">← All options</button>
-    <h2 style="margin-bottom:6px">Lesson packages</h2>
-    <p class="muted" style="margin:0 0 22px">Bundles of one-hour lessons at a discount. Buy now, then book each lesson whenever you like — no need to pay again.</p>
-    <div class="prod-grid" id="pkg-grid"></div>
+    <h2 style="margin-bottom:8px;font-size:clamp(1.9rem,4vw,2.4rem)">Lesson packages</h2>
+    <p class="muted" style="margin:0 0 32px;max-width:560px">Bundle your one-hour lessons for a better rate, then book each one whenever suits — they never expire.</p>
+    <div class="pkg-grid" id="pkg-grid"></div>
+    <div class="pkg-reassure">
+      <span><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Lessons never expire</span>
+      <span><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Book anytime, no rebooking fees</span>
+      <span><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>1:1 with Matthew over Zoom</span>
+    </div>
   </div>
 
   <!-- BOOKING (calendar + slots) -->
@@ -120,7 +250,7 @@
   </div>
 
   <!-- DETAILS (single booking or redeem) -->
-  <div class="screen" id="screen-details">
+  <div class="screen narrow-form" id="screen-details">
     <button class="back" onclick="show('screen-booking')">← Change time</button>
     <h2 style="margin-bottom:14px">Your details</h2>
     <div class="det-summary"><div class="dt" id="det-title"></div><div class="dm" id="det-meta"></div></div>
@@ -134,7 +264,7 @@
   </div>
 
   <!-- PACKAGE BUY details -->
-  <div class="screen" id="screen-pkg-details">
+  <div class="screen narrow-form" id="screen-pkg-details">
     <button class="back" onclick="show('screen-packages')">← Packages</button>
     <h2 style="margin-bottom:14px">Your details</h2>
     <div class="det-summary"><div class="dt" id="pkg-title"></div><div class="dm" id="pkg-meta"></div></div>
@@ -146,7 +276,7 @@
   </div>
 
   <!-- REDEEM email -->
-  <div class="screen" id="screen-redeem-email">
+  <div class="screen narrow-form" id="screen-redeem-email">
     <button class="back" onclick="show('screen-products')">← All options</button>
     <h2 style="margin-bottom:6px">Use your lesson package</h2>
     <p class="muted" style="margin:0 0 18px">Enter the email you bought your package with and we'll show how many lessons you have left.</p>
@@ -161,7 +291,7 @@
 </div></section>
 
 <footer class="site"><div class="wrap">
-  <div><div class="brand-f">Matthew Cawood</div><p style="color:#cbbda9;margin:0;font-size:.95rem;max-width:300px">Pianist, producer and educator. Making music theory and technique genuinely understandable.</p></div>
+  <div><div class="brand-f">Matthew Cawood</div><p style="color:#8a8a90;margin:0;font-size:.95rem;max-width:300px">Pianist, producer and educator. Making music theory and technique genuinely understandable.</p></div>
   <div><h4>Explore</h4><a href="/about/">About</a><a href="/monday-music-tips/">Monday Music Tips</a><a href="/book-a-lesson/">Book a Lesson</a><a href="/contact/">Contact</a></div>
   <div><h4>The Practice Room</h4><a href="https://app.matthewcawood.com/signup">Join the app</a><a href="https://app.matthewcawood.com/">Sign in</a><a href="https://www.youtube.com/@matticawood" target="_blank" rel="noopener">YouTube</a><a href="https://www.instagram.com/matticawood" target="_blank" rel="noopener">Instagram</a></div>
   <div class="legal"><span>© 2026 Matthew Cawood. All rights reserved.</span><span>enquiries@matthewcawood.com</span></div>
@@ -219,8 +349,22 @@ function backToStart(){ show(mode==="redeem" ? "screen-redeem-email" : "screen-p
 
 // ── packages ──
 function renderPackages(){
+  const BEST="6";
+  const tick='<svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>';
   document.getElementById("pkg-grid").innerHTML = PACKAGES.map(p=>`
-    <button class="prod" onclick="pickPackage('${p.pkg}')"><span class="pt">${p.title}</span><span class="pp">${p.price} <span style="color:var(--muted);font-weight:600;font-size:.8rem">· ${p.save}</span></span><span class="pd">${p.per}</span></button>`).join("");
+    <div class="pkg${p.pkg===BEST?" best":""}">
+      ${p.pkg===BEST?'<span class="tag">Most popular</span>':""}
+      <div class="qty">${p.pkg} one-hour lessons</div>
+      <div class="price">${p.price}</div>
+      <div class="per">${p.per}</div>
+      <span class="save">${p.save}</span>
+      <ul>
+        <li>${tick}Full 60-minute lessons with Matthew</li>
+        <li>${tick}Book each one whenever you like</li>
+        <li>${tick}Lessons never expire</li>
+      </ul>
+      <button class="choose" onclick="pickPackage('${p.pkg}')">Choose ${p.pkg}-pack →</button>
+    </div>`).join("");
 }
 let curPkg=null;
 function pickPackage(pkg){
