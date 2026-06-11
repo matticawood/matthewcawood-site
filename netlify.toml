@@ -1,0 +1,8 @@
+# Brand site build: regenerate the Monday Music Tips archive + article pages from
+# Supabase on every deploy / build-hook trigger.
+[build]
+  command = "node build/generate.mjs"
+  publish = "."
+
+[build.environment]
+  NODE_VERSION = "20"
