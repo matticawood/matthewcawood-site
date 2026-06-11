@@ -157,6 +157,10 @@
   .result h2{font-size:1.9rem}
   .btn-ghost{background:transparent;color:#fff;border:1px solid var(--border-2)}
   .btn-ghost:hover{border-color:var(--accent);background:rgba(255,255,255,.04)}
+  .ccy-bar{display:flex;justify-content:flex-end;margin-bottom:14px}
+  .ccy-bar label{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:.82rem}
+  .ccy-bar select{background:var(--surface-2);color:#fff;border:1px solid var(--border);border-radius:9px;padding:7px 11px;font-family:inherit;font-size:.85rem;cursor:pointer}
+  .ccy-bar select:focus{outline:none;border-color:var(--accent)}
 </style>
 </head>
 <body>
@@ -187,6 +191,12 @@
 
   <!-- PRODUCTS -->
   <div class="screen on" id="screen-products">
+    <div class="ccy-bar"><label>Prices in
+      <select id="ccy-select" onchange="onCcyChange(this.value)">
+        <option value="GBP">£ GBP</option><option value="USD">$ USD</option><option value="EUR">€ EUR</option>
+        <option value="CAD">$ CAD</option><option value="AUD">$ AUD</option><option value="NZD">$ NZD</option>
+        <option value="SEK">kr SEK</option><option value="NOK">kr NOK</option><option value="DKK">kr DKK</option><option value="SGD">$ SGD</option>
+      </select></label></div>
     <div class="sessions">
       <button class="session" onclick="pickSingle('c20')">
         <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 1.5"/></svg></div>
@@ -321,13 +331,17 @@ const PACKAGES = [
 // ── currency: detected by location server-side (clinic-checkout ?action=prices), GBP fallback ──
 let CURRENCY="GBP", SYM="£", LP=null;
 function money(v){ v=Number(v); return SYM + (Number.isInteger(v)? v : v.toFixed(2)); }
-async function loadPrices(){
+async function loadPrices(force){
+  let saved=force||""; try{ saved=saved||localStorage.getItem("lesson_ccy")||""; }catch(e){}
+  const q=saved?`&currency=${encodeURIComponent(saved)}`:"";
   try{
-    const r=await fetch(`${FN}/clinic-checkout?action=prices`,{headers:AUTH});
+    const r=await fetch(`${FN}/clinic-checkout?action=prices${q}`,{headers:AUTH});
     const d=await r.json();
-    if(d&&d.prices){ CURRENCY=d.currency; SYM=d.symbol; LP=d.prices; applyPrices(); }
+    if(d&&d.prices){ CURRENCY=d.currency; SYM=d.symbol; LP=d.prices; applyPrices();
+      const s=document.getElementById("ccy-select"); if(s) s.value=CURRENCY; }
   }catch(e){}
 }
+function onCcyChange(v){ try{localStorage.setItem("lesson_ccy",v);}catch(e){} loadPrices(v); }
 function applyPrices(){
   if(!LP) return;
   PRODUCTS.c20.price=money(LP.c20); PRODUCTS.c30.price=money(LP.c30); PRODUCTS.l60.price=money(LP.l60);
