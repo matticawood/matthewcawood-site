@@ -192,27 +192,27 @@
         <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 1.5"/></svg></div>
         <div class="st">20-minute clinic</div>
         <div class="sd">A quick question, a tricky bar, or a fast technique fix.</div>
-        <div class="srow"><div class="sp">£18</div><div class="go">Choose →</div></div>
+        <div class="srow"><div class="sp" id="price-c20">£18</div><div class="go">Choose →</div></div>
       </button>
       <button class="session" onclick="pickSingle('c30')">
         <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v4.5l3.5 2"/></svg></div>
         <div class="st">30-minute clinic</div>
         <div class="sd">A deeper dive into a piece, passage or concept.</div>
-        <div class="srow"><div class="sp">£30</div><div class="go">Choose →</div></div>
+        <div class="srow"><div class="sp" id="price-c30">£30</div><div class="go">Choose →</div></div>
       </button>
       <button class="session feat" onclick="pickSingle('l60')">
         <span class="tag">Most popular</span>
         <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2.5"/></svg></div>
         <div class="st">1-hour lesson</div>
         <div class="sd">A full, tailored lesson — proper time to make real progress.</div>
-        <div class="srow"><div class="sp" id="t-l60">£49</div><div class="go">Choose →</div></div>
+        <div class="srow"><div class="sp" id="price-l60">£49</div><div class="go">Choose →</div></div>
       </button>
     </div>
 
     <div class="pkg-banner" onclick="show('screen-packages')">
       <div class="pb-l">
         <h3>Lesson packages</h3>
-        <p>Bundle your one-hour lessons and <span class="save">save up to £68</span> — book each one whenever you like.</p>
+        <p>Bundle your one-hour lessons and <span class="save">save up to <span id="pkg-save-amt">£68</span></span> — book each one whenever you like.</p>
       </div>
       <span class="pb-cta">View packages →</span>
     </div>
@@ -318,6 +318,30 @@ const PACKAGES = [
   { pkg:"12", title:"12 one-hour lessons", price:"£520", per:"≈ £43.33 / lesson", save:"Save £68" },
 ];
 
+// ── currency: detected by location server-side (clinic-checkout ?action=prices), GBP fallback ──
+let CURRENCY="GBP", SYM="£", LP=null;
+function money(v){ v=Number(v); return SYM + (Number.isInteger(v)? v : v.toFixed(2)); }
+async function loadPrices(){
+  try{
+    const r=await fetch(`${FN}/clinic-checkout?action=prices`,{headers:AUTH});
+    const d=await r.json();
+    if(d&&d.prices){ CURRENCY=d.currency; SYM=d.symbol; LP=d.prices; applyPrices(); }
+  }catch(e){}
+}
+function applyPrices(){
+  if(!LP) return;
+  PRODUCTS.c20.price=money(LP.c20); PRODUCTS.c30.price=money(LP.c30); PRODUCTS.l60.price=money(LP.l60);
+  const set=(id,v)=>{const e=document.getElementById(id); if(e) e.textContent=money(v);};
+  set("price-c20",LP.c20); set("price-c30",LP.c30); set("price-l60",LP.l60);
+  PACKAGES.length=0;
+  [["3",LP.pkg3],["6",LP.pkg6],["12",LP.pkg12]].forEach(([n,price])=>{
+    const qty=+n, save=qty*LP.l60-price;
+    PACKAGES.push({pkg:n,title:`${n} one-hour lessons`,price:money(price),per:`≈ ${money(Math.round(price/qty))} / lesson`,save:`Save ${money(save)}`});
+  });
+  renderPackages();
+  const bn=document.getElementById("pkg-save-amt"); if(bn) bn.textContent=money(12*LP.l60-LP.pkg12);
+}
+
 const userTZ = Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/London";
 let mode = "single";        // 'single' | 'redeem'
 let clinic = null;          // selected product
@@ -382,7 +406,7 @@ async function buyPackage(){
   if(!/.+@.+\..+/.test(email)){ err.textContent="Please enter a valid email."; err.style.display="block"; return; }
   const btn=document.getElementById("pkg-btn"); btn.disabled=true; btn.innerHTML='<span class="spin dk"></span> Preparing…';
   try{
-    const res=await fetch(`${FN}/clinic-checkout`,{method:"POST",headers:AUTH,body:JSON.stringify({ pkg:curPkg.pkg, name, email, pageUrl:location.href.split("?")[0] })});
+    const res=await fetch(`${FN}/clinic-checkout`,{method:"POST",headers:AUTH,body:JSON.stringify({ pkg:curPkg.pkg, name, email, currency:CURRENCY, pageUrl:location.href.split("?")[0] })});
     const data=await res.json();
     if(data.url) location.href=data.url; else throw new Error(data.error||"Error");
   }catch(e){ err.textContent=e.message; err.style.display="block"; btn.disabled=false; btn.innerHTML="Continue to payment →"; }
@@ -506,7 +530,7 @@ async function confirmBooking(){
       if(!res.ok || data.error) throw new Error(data.error||"Booking failed");
       result("🎹","You're booked in!",`Your 1-hour lesson is confirmed — check your email for the details. You have ${data.remaining} lesson${data.remaining===1?"":"s"} left in your package.`);
     } else {
-      const res=await fetch(`${FN}/clinic-checkout`,{method:"POST",headers:AUTH,body:JSON.stringify({ eventTypeId:clinic.id, startTime:new Date(selSlot).toISOString(), duration:clinic.duration, name:fname, email, timeZone:userTZ, notes:notes||undefined, fileUrl:fileUrl||undefined, pageUrl:location.href.split("?")[0] })});
+      const res=await fetch(`${FN}/clinic-checkout`,{method:"POST",headers:AUTH,body:JSON.stringify({ eventTypeId:clinic.id, startTime:new Date(selSlot).toISOString(), duration:clinic.duration, name:fname, email, timeZone:userTZ, currency:CURRENCY, notes:notes||undefined, fileUrl:fileUrl||undefined, pageUrl:location.href.split("?")[0] })});
       const data=await res.json();
       if(data.url) location.href=data.url; else throw new Error(data.error||"Error");
     }
@@ -517,6 +541,7 @@ function result(emoji,title,msg){ document.getElementById("res-emoji").textConte
 // ── boot: handle Stripe return + render packages ──
 (function(){
   renderPackages();
+  loadPrices();
   const q=new URLSearchParams(location.search);
   if(q.get("success")) result("🎉","Payment received!","Thanks — your booking is confirmed and you'll get an email with the details shortly. If you bought a package, the email explains how to book each lesson.");
   else if(q.get("cancelled")) result("↩️","Checkout cancelled","No payment was taken. You can pick another time whenever you're ready.");
