@@ -335,7 +335,7 @@ async function loadPrices(force){
   let saved=force||""; try{ saved=saved||localStorage.getItem("lesson_ccy")||""; }catch(e){}
   const q=saved?`&currency=${encodeURIComponent(saved)}`:"";
   try{
-    const r=await fetch(`${FN}/clinic-checkout?action=prices${q}`,{headers:AUTH});
+    const r=await fetch(`${FN}/clinic-checkout?action=prices&_=${Date.now()}${q}`,{headers:AUTH,cache:"no-store"});
     const d=await r.json();
     if(d&&d.prices){ CURRENCY=d.currency; SYM=d.symbol; LP=d.prices; applyPrices();
       const s=document.getElementById("ccy-select"); if(s) s.value=CURRENCY; }
