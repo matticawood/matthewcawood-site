@@ -222,7 +222,7 @@
     <div class="pkg-banner" onclick="show('screen-packages')">
       <div class="pb-l">
         <h3>Lesson packages</h3>
-        <p>Bundle your one-hour lessons and <span class="save">save up to <span id="pkg-save-amt">£68</span></span> — book each one whenever you like.</p>
+        <p>Bundle your one-hour lessons and <span class="save">save up to <span id="pkg-save-amt">£68</span></span>, then book each one whenever you like.</p>
       </div>
       <span class="pb-cta">View packages →</span>
     </div>
@@ -234,10 +234,10 @@
   <div class="screen" id="screen-packages">
     <button class="back" onclick="show('screen-products')">← All options</button>
     <h2 style="margin-bottom:8px;font-size:clamp(1.9rem,4vw,2.4rem)">Lesson packages</h2>
-    <p class="muted" style="margin:0 0 32px;max-width:560px">Bundle your one-hour lessons for a better rate, then book each one whenever suits — they never expire.</p>
+    <p class="muted" style="margin:0 0 32px;max-width:560px">Bundle your one-hour lessons for a better rate, then book each one whenever suits. Credits are valid for 12 months.</p>
     <div class="pkg-grid" id="pkg-grid"></div>
     <div class="pkg-reassure">
-      <span><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Lessons never expire</span>
+      <span><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Valid for 12 months</span>
       <span><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>Book anytime, no rebooking fees</span>
       <span><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>1:1 with Matthew over Zoom</span>
     </div>
@@ -410,7 +410,7 @@ function renderPackages(){
       <ul>
         <li>${tick}Full 60-minute lessons with Matthew</li>
         <li>${tick}Book each one whenever you like</li>
-        <li>${tick}Lessons never expire</li>
+        <li>${tick}Valid for 12 months</li>
       </ul>
       <button class="choose" onclick="pickPackage('${p.pkg}')">Choose ${p.pkg}-pack →</button>
     </div>`).join("");
