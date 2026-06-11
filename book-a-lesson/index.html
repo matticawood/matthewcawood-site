@@ -331,9 +331,20 @@ const PACKAGES = [
 // ── currency: detected by location server-side (clinic-checkout ?action=prices), GBP fallback ──
 let CURRENCY="GBP", SYM="£", LP=null;
 function money(v){ v=Number(v); return SYM + (Number.isInteger(v)? v : v.toFixed(2)); }
+const SUPPORTED_CCY=["GBP","USD","EUR","CAD","AUD","NZD","SEK","NOK","DKK","SGD"];
+// Detect the buyer's currency in the BROWSER (their real IP) — more reliable than
+// the server header. Falls back gracefully if the lookup is blocked/unavailable.
+async function detectCcy(){
+  try{
+    const r=await fetch("https://ipapi.co/currency/",{cache:"no-store"});
+    if(r.ok){ const c=(await r.text()).trim().toUpperCase(); if(SUPPORTED_CCY.includes(c)) return c; }
+  }catch(e){}
+  return "";
+}
 async function loadPrices(force){
-  let saved=force||""; try{ saved=saved||localStorage.getItem("lesson_ccy")||""; }catch(e){}
-  const q=saved?`&currency=${encodeURIComponent(saved)}`:"";
+  let cur=force||""; try{ cur=cur||localStorage.getItem("lesson_ccy")||""; }catch(e){}
+  if(!cur) cur=await detectCcy();            // explicit choice > browser geo > server fallback
+  const q=cur?`&currency=${encodeURIComponent(cur)}`:"";
   try{
     const r=await fetch(`${FN}/clinic-checkout?action=prices&_=${Date.now()}${q}`,{headers:AUTH,cache:"no-store"});
     const d=await r.json();
