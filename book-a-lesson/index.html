@@ -4,10 +4,66 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Book a Lesson — Matthew Cawood</title>
-<meta name="description" content="Book a 1:1 online piano lesson with Matthew Cawood — tailored to your goals, whether you're starting out, returning, or pushing into advanced repertoire and theory.">
+<meta name="description" content="Book a 1:1 online piano lesson or clinic with Matthew Cawood — 20/30-min clinics, 1-hour lessons, and discounted lesson packages.">
 <meta property="og:title" content="Book a Lesson — Matthew Cawood">
 <link rel="icon" href="/assets/img/icon.webp">
 <link rel="stylesheet" href="/assets/css/site.css">
+<style>
+  .bk{max-width:920px;margin:0 auto;padding:0 22px}
+  .screen{display:none}
+  .screen.on{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .prod-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.prod-grid{grid-template-columns:1fr}}
+  .prod{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--surface);border:1px solid var(--border);
+    border-radius:14px;padding:22px;cursor:pointer;font-family:inherit;transition:transform .12s,border-color .2s,box-shadow .2s}
+  .prod:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 16px 38px -28px rgba(66,56,46,.45)}
+  .prod .pt{font-weight:800;color:var(--heading);font-size:1.12rem}
+  .prod .pp{color:var(--gold-dim);font-weight:800}
+  .prod .pd{color:var(--muted);font-size:.9rem}
+  .pill-link{display:inline-flex;align-items:center;gap:7px;margin-top:22px;color:var(--gold-dim);font-weight:700;cursor:pointer;background:none;border:none;font-family:inherit;font-size:.95rem}
+  .back{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-weight:600;cursor:pointer;background:none;border:none;font-family:inherit;font-size:.9rem;margin-bottom:18px}
+  .back:hover{color:var(--gold-dim)}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px}
+  /* calendar */
+  .cal-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .cal-top button{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;width:34px;height:34px;cursor:pointer;color:var(--heading);font-size:1rem}
+  .cal-top button:disabled{opacity:.35;cursor:default}
+  .cal-range{font-weight:700;color:var(--heading)}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cal-dname{text-align:center;font-size:.6rem;font-weight:800;letter-spacing:.06em;color:var(--muted-2);padding:6px 0}
+  .cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:9px;font-size:.9rem;font-weight:600;color:var(--text)}
+  .cal-day.empty{visibility:hidden}
+  .cal-day.past,.cal-day.noSlots{color:var(--muted-2);opacity:.5}
+  .cal-day.loading{color:var(--muted-2);opacity:.6}
+  .cal-day.avail{background:var(--surface-2);cursor:pointer;border:1px solid transparent}
+  .cal-day.avail:hover{border-color:var(--accent)}
+  .cal-day.selected{background:var(--accent);color:#3a2f12;font-weight:800}
+  .slots-wrap{margin-top:4px}
+  .slots-day-lbl{font-weight:700;color:var(--heading);margin-bottom:10px}
+  .slots-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+  .slot-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:10px 8px;cursor:pointer;font-family:inherit;font-weight:700;color:var(--heading);font-size:.92rem}
+  .slot-btn:hover{border-color:var(--accent)}
+  .slot-btn.sel{background:var(--accent);border-color:var(--accent);color:#3a2f12}
+  .slot-empty{color:var(--muted);font-size:.9rem;padding:14px 0}
+  .spin{width:15px;height:15px;border:2px solid var(--border);border-top-color:var(--gold-dim);border-radius:50%;display:inline-block;animation:sp .7s linear infinite;vertical-align:-2px}
+  .spin.dk{border-color:rgba(0,0,0,.25);border-top-color:#3a2f12}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  /* details form */
+  .field label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:14px 0 5px}
+  .field input,.field textarea{width:100%;border:1.5px solid var(--border);background:#fff;border-radius:10px;padding:12px 14px;font-size:1rem;font-family:inherit;color:var(--text)}
+  .field input:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
+  .field textarea{min-height:90px;resize:vertical}
+  .det-summary{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:6px}
+  .det-summary .dt{font-weight:800;color:var(--heading)}
+  .det-summary .dm{color:var(--muted);font-size:.92rem;margin-top:2px}
+  .err{color:#c0392b;font-size:.9rem;margin-top:12px;display:none}
+  .file-label{display:flex;align-items:center;gap:10px;border:1.5px dashed var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;color:var(--muted);font-size:.9rem;margin-top:5px}
+  .file-label.has{border-style:solid;color:var(--heading)}
+  .credit-note{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;color:var(--heading);font-weight:600}
+  .result{text-align:center;padding:30px 0}
+  .result .big{font-size:2.6rem;margin-bottom:10px}
+</style>
 </head>
 <body>
 
@@ -23,21 +79,86 @@
   </nav>
 </div></header>
 
-<section class="page-intro"><div class="wrap">
-  <p class="eyebrow">1:1 Lessons</p>
-  <h1>Book a Lesson</h1>
-  <p>Personal online lessons tailored to exactly what you want to work on — technique, theory, repertoire, sight-reading or musicality. Pick a time below and we'll take it from there.</p>
-</div></section>
+<section class="page-intro"><div class="wrap"><p class="eyebrow">1:1 with Matthew</p><h1>Book a Lesson</h1>
+  <p>Online clinics, full lessons and discounted packages — pick what suits, choose a time, and you're booked.</p></div></section>
 
-<section style="padding-top:18px">
-  <div class="wrap">
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:10px;box-shadow:0 30px 70px -50px rgba(66,56,46,.5)">
-      <iframe src="https://app.acuityscheduling.com/schedule.php?owner=14537778" title="Schedule a lesson with Matthew Cawood" width="100%" height="820" frameborder="0" style="border-radius:10px;display:block"></iframe>
+<section style="padding-top:14px;padding-bottom:90px"><div class="bk">
+
+  <!-- PRODUCTS -->
+  <div class="screen on" id="screen-products">
+    <div class="prod-grid">
+      <button class="prod" onclick="pickSingle('c20')"><span class="pt">20-minute clinic</span><span class="pp">£18</span><span class="pd">A quick question or technique fix.</span></button>
+      <button class="prod" onclick="pickSingle('c30')"><span class="pt">30-minute clinic</span><span class="pp">£25</span><span class="pd">A deeper dive into a piece or concept.</span></button>
+      <button class="prod" onclick="pickSingle('l60')"><span class="pt">1-hour lesson</span><span class="pp" id="t-l60">£49</span><span class="pd">A full lesson tailored to your goals.</span></button>
+      <button class="prod" onclick="show('screen-packages')"><span class="pt">Lesson packages</span><span class="pp">Save up to 15%</span><span class="pd">Buy 3, 6 or 12 one-hour lessons.</span></button>
     </div>
-    <p class="muted" style="text-align:center;font-size:.9rem;margin-top:18px">Prefer to ask a question first? <a href="/contact/" style="color:var(--gold-dim);font-weight:600">Get in touch →</a></p>
+    <button class="pill-link" onclick="show('screen-redeem-email')">Already have a package? Book a lesson →</button>
   </div>
-</section>
-<script src="https://embed.acuityscheduling.com/js/embed.js" type="text/javascript"></script>
+
+  <!-- PACKAGES -->
+  <div class="screen" id="screen-packages">
+    <button class="back" onclick="show('screen-products')">← All options</button>
+    <h2 style="margin-bottom:6px">Lesson packages</h2>
+    <p class="muted" style="margin:0 0 22px">Bundles of one-hour lessons at a discount. Buy now, then book each lesson whenever you like — no need to pay again.</p>
+    <div class="prod-grid" id="pkg-grid"></div>
+  </div>
+
+  <!-- BOOKING (calendar + slots) -->
+  <div class="screen" id="screen-booking">
+    <button class="back" onclick="backToStart()">← Back</button>
+    <h2 id="bk-title" style="margin-bottom:4px">Pick a time</h2>
+    <p class="muted" id="bk-sub" style="margin:0 0 18px"></p>
+    <div class="panel">
+      <div class="cal-top"><button id="nav-prev" onclick="navPrev()">‹</button><div class="cal-range" id="cal-range"></div><button id="nav-next" onclick="navNext()">›</button></div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="slots-wrap">
+        <div id="slots-empty-state" class="slot-empty">Select a day to see available times.</div>
+        <div id="slots-day-hdr" style="display:none;margin-top:14px"><div class="slots-day-lbl" id="slots-day-lbl"></div></div>
+        <div class="slots-list" id="slots-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAILS (single booking or redeem) -->
+  <div class="screen" id="screen-details">
+    <button class="back" onclick="show('screen-booking')">← Change time</button>
+    <h2 style="margin-bottom:14px">Your details</h2>
+    <div class="det-summary"><div class="dt" id="det-title"></div><div class="dm" id="det-meta"></div></div>
+    <div class="field"><label>First name</label><input type="text" id="inp-fname" autocomplete="given-name"></div>
+    <div class="field"><label>Email</label><input type="email" id="inp-email" autocomplete="email"></div>
+    <div class="field"><label>What would you like to work on? <span style="text-transform:none;color:var(--muted-2)">(optional)</span></label><textarea id="inp-notes"></textarea></div>
+    <label class="file-label" id="file-label" onclick="document.getElementById('inp-file').click()"><span id="file-name">Attach sheet music / files (optional)</span></label>
+    <input type="file" id="inp-file" multiple style="display:none" onchange="onFileChange(this)">
+    <button class="btn" id="pay-btn" style="margin-top:18px;width:100%;justify-content:center" onclick="confirmBooking()">Confirm booking →</button>
+    <div class="err" id="err-msg"></div>
+  </div>
+
+  <!-- PACKAGE BUY details -->
+  <div class="screen" id="screen-pkg-details">
+    <button class="back" onclick="show('screen-packages')">← Packages</button>
+    <h2 style="margin-bottom:14px">Your details</h2>
+    <div class="det-summary"><div class="dt" id="pkg-title"></div><div class="dm" id="pkg-meta"></div></div>
+    <div class="field"><label>First name</label><input type="text" id="pkg-fname" autocomplete="given-name"></div>
+    <div class="field"><label>Email</label><input type="email" id="pkg-email" autocomplete="email"></div>
+    <p class="muted" style="font-size:.86rem;margin-top:12px">After payment you'll get an email and can book each lesson here using this address.</p>
+    <button class="btn" id="pkg-btn" style="margin-top:14px;width:100%;justify-content:center" onclick="buyPackage()">Continue to payment →</button>
+    <div class="err" id="pkg-err"></div>
+  </div>
+
+  <!-- REDEEM email -->
+  <div class="screen" id="screen-redeem-email">
+    <button class="back" onclick="show('screen-products')">← All options</button>
+    <h2 style="margin-bottom:6px">Use your lesson package</h2>
+    <p class="muted" style="margin:0 0 18px">Enter the email you bought your package with and we'll show how many lessons you have left.</p>
+    <div class="field"><label>Email</label><input type="email" id="rd-email" autocomplete="email"></div>
+    <button class="btn" id="rd-btn" style="margin-top:16px" onclick="checkCredits()">Check my lessons →</button>
+    <div class="err" id="rd-err"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen" id="screen-result"><div class="result panel"><div class="big" id="res-emoji">🎉</div><h2 id="res-title"></h2><p class="muted" id="res-msg" style="max-width:440px;margin:10px auto 0"></p><a class="btn btn-ghost" href="/book-a-lesson/" style="margin-top:22px">Done</a></div></div>
+
+</div></section>
 
 <footer class="site"><div class="wrap">
   <div><div class="brand-f">Matthew Cawood</div><p style="color:#cbbda9;margin:0;font-size:.95rem;max-width:300px">Pianist, producer and educator. Making music theory and technique genuinely understandable.</p></div>
@@ -45,4 +166,216 @@
   <div><h4>The Practice Room</h4><a href="https://app.matthewcawood.com/signup">Join the app</a><a href="https://app.matthewcawood.com/">Sign in</a><a href="https://www.youtube.com/@matticawood" target="_blank" rel="noopener">YouTube</a><a href="https://www.instagram.com/matticawood" target="_blank" rel="noopener">Instagram</a></div>
   <div class="legal"><span>© 2026 Matthew Cawood. All rights reserved.</span><span>enquiries@matthewcawood.com</span></div>
 </div></footer>
+
+<script>
+const SUPABASE_URL = "https://gyskfutmncprqxazgatv.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5c2tmdXRtbmNwcnF4YXpnYXR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3NjIwMTYsImV4cCI6MjA5MTMzODAxNn0.ttC3plmhbA7ls_T3w25XgYT0WBt6O3MMu0G6NrEKI9g";
+const FN   = `${SUPABASE_URL}/functions/v1`;
+const AUTH = { "Authorization": `Bearer ${SUPABASE_ANON}`, "Content-Type": "application/json" };
+
+// Cal.com event-type id for the 1-hour lesson ("60 Min Clinic").
+const EVENT_1HR = 5982378;
+
+const PRODUCTS = {
+  c20: { id:5482429, title:"20-minute clinic", duration:20, price:"£18" },
+  c30: { id:5482430, title:"30-minute clinic", duration:30, price:"£25" },
+  l60: { id:EVENT_1HR, title:"1-hour lesson",   duration:60, price:"£49" },
+};
+// Package display (prices mirror clinic-checkout PACKAGES).
+const PACKAGES = [
+  { pkg:"3",  title:"3 one-hour lessons",  price:"£140", per:"≈ £46.67 / lesson", save:"Save £7" },
+  { pkg:"6",  title:"6 one-hour lessons",  price:"£270", per:"£45.00 / lesson",   save:"Save £24" },
+  { pkg:"12", title:"12 one-hour lessons", price:"£520", per:"≈ £43.33 / lesson", save:"Save £68" },
+];
+
+const userTZ = Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/London";
+let mode = "single";        // 'single' | 'redeem'
+let clinic = null;          // selected product
+let redeemEmail = "";
+let calYear, calMonth, selDate=null, selSlot=null, monthAvail=null, loadingAvail=false, selFiles=[];
+
+const pad = n => String(n).padStart(2,"0");
+const toISO = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const todayISO = () => toISO(new Date());
+const fmtTime = iso => new Date(iso).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",timeZone:userTZ});
+function show(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on")); document.getElementById(id).classList.add("on"); window.scrollTo({top:0,behavior:"smooth"}); }
+
+// ── product selection ──
+function pickSingle(key){
+  clinic = PRODUCTS[key]; mode = "single";
+  if (key==="l60" && !clinic.id){ alert("1-hour lessons aren't quite set up yet — please try a clinic, or contact me."); return; }
+  startBooking();
+}
+function startBooking(){
+  selDate=null; selSlot=null; monthAvail=null;
+  const now=new Date(); calYear=now.getFullYear(); calMonth=now.getMonth();
+  document.getElementById("bk-title").textContent = mode==="redeem" ? "Book your lesson" : `Pick a time`;
+  document.getElementById("bk-sub").textContent = mode==="redeem"
+    ? `1-hour lesson · using a package credit` : `${clinic.title} · ${clinic.price}`;
+  clearSlots(); show("screen-booking"); renderMonth();
+  loadMonthAvailability(calYear,calMonth).then(()=>{ renderMonth(); autoSelectFirst(); });
+}
+function backToStart(){ show(mode==="redeem" ? "screen-redeem-email" : "screen-products"); }
+
+// ── packages ──
+function renderPackages(){
+  document.getElementById("pkg-grid").innerHTML = PACKAGES.map(p=>`
+    <button class="prod" onclick="pickPackage('${p.pkg}')"><span class="pt">${p.title}</span><span class="pp">${p.price} <span style="color:var(--muted);font-weight:600;font-size:.8rem">· ${p.save}</span></span><span class="pd">${p.per}</span></button>`).join("");
+}
+let curPkg=null;
+function pickPackage(pkg){
+  curPkg = PACKAGES.find(p=>p.pkg===pkg);
+  document.getElementById("pkg-title").textContent = curPkg.title;
+  document.getElementById("pkg-meta").textContent = `${curPkg.price} · ${curPkg.save} · book each lesson whenever`;
+  document.getElementById("pkg-err").style.display="none";
+  show("screen-pkg-details");
+}
+async function buyPackage(){
+  const name=document.getElementById("pkg-fname").value.trim();
+  const email=document.getElementById("pkg-email").value.trim();
+  const err=document.getElementById("pkg-err");
+  if(!name){ err.textContent="Please enter your name."; err.style.display="block"; return; }
+  if(!/.+@.+\..+/.test(email)){ err.textContent="Please enter a valid email."; err.style.display="block"; return; }
+  const btn=document.getElementById("pkg-btn"); btn.disabled=true; btn.innerHTML='<span class="spin dk"></span> Preparing…';
+  try{
+    const res=await fetch(`${FN}/clinic-checkout`,{method:"POST",headers:AUTH,body:JSON.stringify({ pkg:curPkg.pkg, name, email, pageUrl:location.href.split("?")[0] })});
+    const data=await res.json();
+    if(data.url) location.href=data.url; else throw new Error(data.error||"Error");
+  }catch(e){ err.textContent=e.message; err.style.display="block"; btn.disabled=false; btn.innerHTML="Continue to payment →"; }
+}
+
+// ── redeem ──
+async function checkCredits(){
+  const email=document.getElementById("rd-email").value.trim().toLowerCase();
+  const err=document.getElementById("rd-err"); err.style.display="none";
+  if(!/.+@.+\..+/.test(email)){ err.textContent="Please enter a valid email."; err.style.display="block"; return; }
+  const btn=document.getElementById("rd-btn"); btn.disabled=true; btn.innerHTML='<span class="spin dk"></span> Checking…';
+  try{
+    const res=await fetch(`${FN}/lesson-credits?email=${encodeURIComponent(email)}`,{headers:AUTH});
+    const data=await res.json();
+    if((data.remaining||0)<=0){ err.textContent="No lessons found for that email. If you've just bought a package, give it a minute and try again."; err.style.display="block"; return; }
+    if(!EVENT_1HR){ err.textContent="Lesson booking isn't quite set up yet — please contact me to schedule."; err.style.display="block"; return; }
+    redeemEmail=email; mode="redeem"; clinic=PRODUCTS.l60; startBooking();
+  }catch(e){ err.textContent="Something went wrong — please try again."; err.style.display="block"; }
+  finally{ btn.disabled=false; btn.innerHTML="Check my lessons →"; }
+}
+
+// ── calendar / slots (ported from the Practice Room booking engine) ──
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const DAYS=["SUN","MON","TUE","WED","THU","FRI","SAT"];
+function navPrev(){ shiftMonth(-1); } function navNext(){ shiftMonth(1); }
+function shiftMonth(d){ calMonth+=d; if(calMonth>11){calMonth=0;calYear++;} if(calMonth<0){calMonth=11;calYear--;}
+  selDate=null; loadingAvail=true; clearSlots(); renderMonth();
+  loadMonthAvailability(calYear,calMonth).then(()=>{ renderMonth(); autoSelectFirst(); }); }
+async function loadMonthAvailability(year,month){
+  loadingAvail=true; monthAvail=null;
+  const startDate=`${year}-${pad(month+1)}-01`; const last=new Date(year,month+1,0).getDate(); const endDate=`${year}-${pad(month+1)}-${pad(last)}`;
+  try{
+    const p=new URLSearchParams({action:"slots",eventTypeId:String(clinic.id),startDate,endDate,timeZone:userTZ});
+    const res=await fetch(`${FN}/clinic-slots?${p}`,{headers:AUTH}); const data=await res.json();
+    if(data.error||!data.data){ monthAvail=null; return; }
+    let all=[]; if(data.data?.slots) all=Object.values(data.data.slots).flat(); else if(Array.isArray(data.data)) all=data.data;
+    const set=new Set(); all.forEach(s=>{ const t=s.time||s; set.add(new Date(t).toLocaleDateString("en-CA",{timeZone:userTZ})); }); monthAvail=set;
+  }catch(e){ monthAvail=null; } finally{ loadingAvail=false; }
+}
+function renderMonth(){
+  const today=todayISO(); const now=new Date();
+  document.getElementById("cal-range").textContent=`${MONTHS[calMonth]} ${calYear}`;
+  document.getElementById("nav-prev").disabled = calYear===now.getFullYear() && calMonth===now.getMonth();
+  const firstDow=new Date(calYear,calMonth,1).getDay(); const days=new Date(calYear,calMonth+1,0).getDate();
+  const limit=new Date(); limit.setDate(limit.getDate()+60); const limitISO=toISO(limit);
+  let html=DAYS.map(d=>`<div class="cal-dname">${d}</div>`).join("");
+  for(let i=0;i<firstDow;i++) html+=`<div class="cal-day empty"></div>`;
+  for(let d=1;d<=days;d++){
+    const iso=`${calYear}-${pad(calMonth+1)}-${pad(d)}`; const past=iso<today; const beyond=iso>limitISO; const sel=iso===selDate;
+    const has=monthAvail?monthAvail.has(iso):(!past&&!beyond);
+    let cls="cal-day"; if(sel)cls+=" selected"; else if(past||beyond)cls+=" past"; else if(loadingAvail)cls+=" loading"; else if(!has)cls+=" noSlots"; else cls+=" avail";
+    const ok=!loadingAvail&&!past&&!beyond&&has;
+    html+=`<div class="${cls}"${ok?` onclick="onDay('${iso}')"`:""}>${d}</div>`;
+  }
+  document.getElementById("cal-grid").innerHTML=html;
+}
+function autoSelectFirst(){
+  const today=todayISO();
+  if(today.startsWith(`${calYear}-${pad(calMonth+1)}`) && (!monthAvail||monthAvail.has(today))){ onDay(today); return; }
+  if(monthAvail){ const last=new Date(calYear,calMonth+1,0).getDate();
+    for(let d=1;d<=last;d++){ const iso=`${calYear}-${pad(calMonth+1)}-${pad(d)}`; if(iso>=today&&monthAvail.has(iso)){ onDay(iso); return; } } }
+}
+async function onDay(date){
+  selDate=date; selSlot=null; renderMonth();
+  const d=new Date(date+"T12:00:00");
+  document.getElementById("slots-empty-state").style.display="none";
+  document.getElementById("slots-day-hdr").style.display="";
+  document.getElementById("slots-day-lbl").textContent=d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"});
+  document.getElementById("slots-list").innerHTML=`<div class="slot-empty"><span class="spin"></span> Loading…</div>`;
+  const slots=await fetchSlots(date);
+  if(!slots){ document.getElementById("slots-list").innerHTML=`<div class="slot-empty" style="color:#c0392b">Error loading times.</div>`; return; }
+  if(!slots.length){ document.getElementById("slots-list").innerHTML=`<div class="slot-empty">No times available this day.</div>`; return; }
+  document.getElementById("slots-list").innerHTML=slots.map(t=>`<button class="slot-btn" onclick="onSlot('${t}',this)">${fmtTime(t)}</button>`).join("");
+}
+async function fetchSlots(date){
+  try{ const p=new URLSearchParams({action:"slots",eventTypeId:String(clinic.id),date,timeZone:userTZ});
+    const res=await fetch(`${FN}/clinic-slots?${p}`,{headers:AUTH}); const data=await res.json();
+    let all=[]; if(data.data?.slots) all=Object.values(data.data.slots).flat(); else if(Array.isArray(data.data)) all=data.data;
+    return all.map(s=>s.time||s).filter(t=>new Date(t).toLocaleDateString("en-CA",{timeZone:userTZ})===date);
+  }catch(e){ return null; }
+}
+function clearSlots(){ document.getElementById("slots-empty-state").style.display=""; document.getElementById("slots-day-hdr").style.display="none"; document.getElementById("slots-list").innerHTML=""; }
+function onSlot(iso,btn){ selSlot=iso; document.querySelectorAll(".slot-btn").forEach(b=>b.classList.remove("sel")); btn.classList.add("sel"); openDetails(iso); }
+function openDetails(iso){
+  const dateStr=new Date(iso).toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:userTZ});
+  document.getElementById("det-title").textContent = mode==="redeem" ? "1-hour lesson (package)" : `${clinic.title} · ${clinic.price}`;
+  document.getElementById("det-meta").textContent = `${dateStr} at ${fmtTime(iso)}`;
+  if(mode==="redeem"){ document.getElementById("inp-email").value=redeemEmail; document.getElementById("inp-email").readOnly=true; }
+  else { document.getElementById("inp-email").readOnly=false; }
+  document.getElementById("err-msg").style.display="none";
+  const b=document.getElementById("pay-btn"); b.disabled=false; b.innerHTML = mode==="redeem" ? "Book my lesson →" : "Confirm booking →";
+  show("screen-details");
+}
+// ── files + checkout ──
+function onFileChange(input){
+  const files=Array.from(input.files); if(!files.length) return;
+  const big=files.find(f=>f.size>10*1024*1024); if(big){ showErr(`"${big.name}" exceeds 10 MB.`); input.value=""; return; }
+  selFiles=files; document.getElementById("file-name").textContent = files.length===1?files[0].name:`${files.length} files`;
+  document.getElementById("file-label").classList.add("has");
+}
+async function uploadAttachment(file){
+  const ext=file.name.split(".").pop(); const path=`${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const res=await fetch(`${SUPABASE_URL}/storage/v1/object/clinic-files/${path}`,{method:"POST",headers:{"Authorization":`Bearer ${SUPABASE_ANON}`,"Content-Type":file.type},body:file});
+  if(!res.ok) throw new Error("upload failed"); return `${SUPABASE_URL}/storage/v1/object/public/clinic-files/${path}`;
+}
+function showErr(m){ const e=document.getElementById("err-msg"); e.textContent=m; e.style.display="block"; }
+async function confirmBooking(){
+  const fname=document.getElementById("inp-fname").value.trim();
+  const email=document.getElementById("inp-email").value.trim();
+  const notes=document.getElementById("inp-notes").value.trim();
+  document.getElementById("err-msg").style.display="none";
+  if(!fname){ showErr("Please enter your first name."); return; }
+  if(!/.+@.+\..+/.test(email)){ showErr("Please enter a valid email."); return; }
+  const btn=document.getElementById("pay-btn"); btn.disabled=true; btn.innerHTML='<span class="spin dk"></span> Working…';
+  try{
+    let fileUrl=null;
+    if(selFiles.length){ try{ fileUrl=(await Promise.all(selFiles.map(uploadAttachment))).join(", "); }catch(_){} }
+    if(mode==="redeem"){
+      const res=await fetch(`${FN}/lesson-redeem`,{method:"POST",headers:AUTH,body:JSON.stringify({ email, eventTypeId:clinic.id, startTime:new Date(selSlot).toISOString(), name:fname, timeZone:userTZ, notes:notes||undefined, fileUrl:fileUrl||undefined })});
+      const data=await res.json();
+      if(!res.ok || data.error) throw new Error(data.error||"Booking failed");
+      result("🎹","You're booked in!",`Your 1-hour lesson is confirmed — check your email for the details. You have ${data.remaining} lesson${data.remaining===1?"":"s"} left in your package.`);
+    } else {
+      const res=await fetch(`${FN}/clinic-checkout`,{method:"POST",headers:AUTH,body:JSON.stringify({ eventTypeId:clinic.id, startTime:new Date(selSlot).toISOString(), duration:clinic.duration, name:fname, email, timeZone:userTZ, notes:notes||undefined, fileUrl:fileUrl||undefined, pageUrl:location.href.split("?")[0] })});
+      const data=await res.json();
+      if(data.url) location.href=data.url; else throw new Error(data.error||"Error");
+    }
+  }catch(e){ showErr(e.message); btn.disabled=false; btn.innerHTML = mode==="redeem" ? "Book my lesson →" : "Confirm booking →"; }
+}
+function result(emoji,title,msg){ document.getElementById("res-emoji").textContent=emoji; document.getElementById("res-title").textContent=title; document.getElementById("res-msg").textContent=msg; show("screen-result"); }
+
+// ── boot: handle Stripe return + render packages ──
+(function(){
+  renderPackages();
+  const q=new URLSearchParams(location.search);
+  if(q.get("success")) result("🎉","Payment received!","Thanks — your booking is confirmed and you'll get an email with the details shortly. If you bought a package, the email explains how to book each lesson.");
+  else if(q.get("cancelled")) result("↩️","Checkout cancelled","No payment was taken. You can pick another time whenever you're ready.");
+})();
+</script>
 </body></html>
