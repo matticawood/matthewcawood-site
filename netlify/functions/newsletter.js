@@ -16,16 +16,24 @@ exports.handler = async (evt) => {
   catch { return fail(400, "Bad JSON"); }
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return fail(400, "Invalid email");
 
-  // upsert subscriber (ignore if already there)
+  // Add to email_contacts + the Monday Music Tips list (the campaign system the
+  // sender reads from). Service role bypasses RLS. Contact must exist before the
+  // subscription (FK), so insert it first.
   try {
     if (SERVICE) {
-      await fetch(`${SUPABASE_URL}/rest/v1/newsletter_subscribers?on_conflict=email`, {
+      const h = { apikey: SERVICE, Authorization: `Bearer ${SERVICE}`, "Content-Type": "application/json" };
+      await fetch(`${SUPABASE_URL}/rest/v1/email_contacts`, {
         method: "POST",
-        headers: { apikey: SERVICE, Authorization: `Bearer ${SERVICE}`, "Content-Type": "application/json", Prefer: "resolution=ignore-duplicates,return=minimal" },
-        body: JSON.stringify({ email, source }),
+        headers: { ...h, Prefer: "resolution=ignore-duplicates,return=minimal" },
+        body: JSON.stringify({ email, notes: source ? `signup: ${source}` : null }),
+      });
+      await fetch(`${SUPABASE_URL}/rest/v1/email_list_subscriptions`, {
+        method: "POST",
+        headers: { ...h, Prefer: "resolution=merge-duplicates,return=minimal" },
+        body: JSON.stringify({ email, list_slug: "monday-music-tips", opted_out: false }),
       });
     }
-  } catch (e) { console.error("subscriber insert failed:", e); }
+  } catch (e) { console.error("subscribe failed:", e); }
 
   // welcome email (best-effort)
   try {
