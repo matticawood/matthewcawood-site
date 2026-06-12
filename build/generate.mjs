@@ -36,7 +36,7 @@ function header(active){
   const link=(href,label)=>`<a href="${href}"${active===href?' aria-current="page"':''}>${label}</a>`;
   return `<header class="site"><div class="wrap nav">
   <a class="brand" href="/">
-    <svg class="brand-mark" viewBox="0 0 40 40" width="34" height="34" aria-hidden="true"><rect x="1" y="1" width="38" height="38" rx="10" fill="#fff" stroke="#e0d5c8"/><text x="20" y="26.5" text-anchor="middle" font-family="Georgia, serif" font-size="17" font-weight="700" fill="#42382e" letter-spacing="-1">MC</text></svg>
+    <img class="brand-mark" src="/assets/img/m-logo.webp" width="34" height="34" alt="" aria-hidden="true">
     <span>Matthew Cawood<small>Pianist · Producer · Educator</small></span>
   </a>
   <button class="nav-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
@@ -69,7 +69,7 @@ function shell({title, desc, body, active, extraHead=""}){
 <meta name="description" content="${esc(desc)}">
 <meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:type" content="article">
 <link rel="icon" href="/assets/img/icon.webp">
-<link rel="stylesheet" href="/assets/css/site.css?v=2">${extraHead}
+<link rel="stylesheet" href="/assets/css/site.css?v=3">${extraHead}
 </head><body>
 ${header(active)}
 ${body}
@@ -166,7 +166,7 @@ const STORE = [
       "Enough exercises to take your sight reading to a level where you can confidently read pieces of music.",
       "Divided into three sections: 150 right-hand fundamentals, 150 left-hand fundamentals, and 120 Grade 1 level exercises. The first two sections build through six incrementally harder levels and can be worked simultaneously to develop both hands at once.",
       "Available as a digital download.",
-    ] },
+    ], gallery:["beginner-sight-reading-book-2"] },
 
   { slug:"beginners-guide-reading-sheet-music", title:"Beginners Guide to Reading Sheet Music", collection:"books", type:"pdf", price:1499,
     tagline:"Everything you need to start reading sheet music with confidence.",
@@ -174,14 +174,14 @@ const STORE = [
       "All the information you need to get the best possible start with reading sheet music.",
       "By the end you'll understand how to read notes and rhythms, what every symbol means, and the methods for learning to read quickly, so you can approach any piece and know exactly what to do.",
       "Available as a digital download.",
-    ] },
+    ], gallery:["beginners-guide-reading-sheet-music-2","beginners-guide-reading-sheet-music-3"] },
 
   { slug:"playing-by-ear-theory", title:"Playing by Ear: Theory Exercises", collection:"books", type:"pdf", price:799,
     tagline:"The theory you need to start playing by ear.",
     blurb:[
       "Theory exercises designed to help you understand music well enough to start playing the piano by ear.",
       "Covers locating notes on the piano, sharps and flats, tones and semitones, major and minor scales, the three types of minor, and working out scales from a selection of notes.",
-    ] },
+    ], gallery:["playing-by-ear-theory-2"] },
 
   { slug:"30-ways-to-play-a-chord", title:"30 Ways to Play a Chord", collection:"books", type:"pdf", price:799,
     tagline:"30 patterns to play any chord more musically.",
@@ -253,6 +253,14 @@ const STORE_CSS = `<style>
 .product-detail .pd-cover{border:1px solid var(--border);border-radius:18px;overflow:hidden;background:#0d0d0f;position:sticky;top:96px}
 .product-detail .pd-cover img{width:100%;display:block}
 @media(max-width:820px){.product-detail .pd-cover{position:static;max-width:340px;margin:0 auto}}
+.product-detail .pd-gallery{position:sticky;top:96px}
+.product-detail .pd-gallery .pd-cover{position:static}
+.pd-thumbs{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.pd-thumb{width:62px;height:62px;border-radius:11px;overflow:hidden;border:1.5px solid var(--border);background:#0d0d0f;padding:0;cursor:pointer;transition:border-color .15s,transform .15s}
+.pd-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.pd-thumb:hover{transform:translateY(-2px)}
+.pd-thumb.active{border-color:var(--gold-dim)}
+@media(max-width:820px){.product-detail .pd-gallery{position:static;max-width:340px;margin:0 auto}.pd-thumbs{justify-content:center}}
 .product-detail .pd-tag{font-size:.74rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gold-dim);margin:0 0 8px}
 .product-detail h1{font-size:clamp(1.8rem,4vw,2.5rem);margin:0 0 6px;line-height:1.12}
 .product-detail .pd-tagline{color:var(--muted);font-size:1.08rem;margin:0 0 22px}
@@ -385,7 +393,12 @@ function storeProductPage(p){
     <section style="padding-top:6px"><div class="wrap">
       ${banner}
       <div class="product-detail">
-        <div class="pd-cover"><img src="/assets/img/store/${p.slug}.webp" alt="${esc(p.title)}"></div>
+        ${(()=>{ const imgs=[p.slug,...(p.gallery||[])];
+          if(imgs.length<2) return `<div class="pd-cover"><img src="/assets/img/store/${p.slug}.webp" alt="${esc(p.title)}"></div>`;
+          return `<div class="pd-gallery">
+            <div class="pd-cover"><img id="pd-main" src="/assets/img/store/${p.slug}.webp" alt="${esc(p.title)}"></div>
+            <div class="pd-thumbs">${imgs.map((s,i)=>`<button type="button" class="pd-thumb${i===0?' active':''}" data-src="/assets/img/store/${s}.webp" aria-label="View image ${i+1}"><img src="/assets/img/store/${s}.webp" alt="${esc(p.title)} preview ${i+1}"></button>`).join("")}</div>
+          </div>`; })()}
         <div class="pd-info">
           <p class="pd-tag">${p.type==="course"?"Video Course":"Digital Download"}</p>
           <h1>${esc(p.title)}</h1>
@@ -397,6 +410,7 @@ function storeProductPage(p){
       </div>
     </div></section>
     ${storeJS}
+    <script>(function(){var m=document.getElementById("pd-main");if(!m)return;document.querySelectorAll(".pd-thumb").forEach(function(t){t.addEventListener("click",function(){m.src=t.getAttribute("data-src");document.querySelectorAll(".pd-thumb").forEach(function(x){x.classList.remove("active")});t.classList.add("active");});});})();</script>
     <script>if(/[?&]success=true/.test(location.search)){var b=document.getElementById("success-banner");if(b)b.style.display="flex";}</script>`;
   return shell({ title:`${p.title}, Store, Matthew Cawood`, desc:p.tagline, body, active:"/store/", extraHead:STORE_CSS });
 }
