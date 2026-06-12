@@ -349,6 +349,31 @@ const STORE_CSS = `<style>
 .member-copy p{color:var(--muted);margin:0;line-height:1.6}
 .member-inner .btn{position:relative;flex:none}
 @media(max-width:760px){.member-inner{padding:24px}}
+/* ── reviews ── */
+.stars{display:inline-flex;gap:1px;letter-spacing:1px;white-space:nowrap}
+.stars .star{color:#3a3a42}
+.stars .star.on{color:var(--accent)}
+.pd-rating{display:inline-flex;align-items:center;gap:9px;text-decoration:none;margin:-8px 0 18px;font-size:.95rem}
+.pd-rating .pd-rating-n{color:var(--muted);font-weight:600}
+.reviews-sec{padding:36px 0 8px}
+.reviews-sec .col-head{display:flex;align-items:baseline;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.reviews-sec h2{font-size:clamp(1.4rem,3vw,1.9rem);margin:0}
+.reviews-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:26px}
+.review{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px}
+.rv-head{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.rv-name{font-weight:700;font-size:.92rem}
+.rv-body{margin:0;color:var(--text);font-size:.98rem;line-height:1.6}
+.rv-empty{color:var(--muted);margin:0 0 24px}
+.review-form{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px 24px;max-width:560px}
+.review-form h3{margin:0 0 14px;font-size:1.1rem}
+.rv-stars{display:flex;gap:4px;margin-bottom:14px}
+.rv-star{background:none;border:none;cursor:pointer;font-size:1.7rem;line-height:1;color:#3a3a42;padding:0;transition:color .12s}
+.rv-star.on{color:var(--accent)}
+.rv-fields{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.rv-fields input{flex:1;min-width:180px;border:1.5px solid var(--border-2);background:var(--bg);border-radius:11px;padding:12px 14px;font-size:1rem;color:var(--text);font-family:inherit}
+.review-form textarea{width:100%;box-sizing:border-box;border:1.5px solid var(--border-2);background:var(--bg);border-radius:11px;padding:12px 14px;font-size:1rem;color:var(--text);font-family:inherit;line-height:1.6;resize:vertical;min-height:88px}
+.rv-fields input:focus,.review-form textarea:focus{outline:none;border-color:var(--accent)}
+.review-form .btn{margin-top:14px}
 </style>`;
 
 // Client script shared by store pages: localise prices + buy / free-download flow.
@@ -389,6 +414,30 @@ const storeJS = `<script>
         else { note.textContent=d.error||"Something went wrong, please try again."; } })
       .catch(function(){ b.disabled=false; note.textContent="Something went wrong, please try again."; });
   }); }
+  // Review form (star picker + submit → store-review).
+  var rf=document.getElementById("review-form");
+  if(rf){
+    var chosen=0, stars=rf.querySelectorAll(".rv-star");
+    function paint(n){ stars.forEach(function(s,i){ s.classList.toggle("on", i<n); }); }
+    stars.forEach(function(s,i){
+      s.addEventListener("mouseenter",function(){ paint(i+1); });
+      s.addEventListener("click",function(){ chosen=i+1; paint(chosen); });
+    });
+    rf.addEventListener("mouseleave",function(){ paint(chosen); });
+    rf.addEventListener("submit",function(e){ e.preventDefault();
+      var note=document.getElementById("rv-note"), b=rf.querySelector("button[type=submit]");
+      var name=rf.querySelector("[name=name]").value.trim(), email=rf.querySelector("[name=email]").value.trim(), body=rf.querySelector("[name=body]").value.trim();
+      if(!chosen){ note.textContent="Please pick a star rating."; return; }
+      if(!name||body.length<4){ note.textContent="Please add your name and a few words."; return; }
+      b.disabled=true; note.textContent="Sending…";
+      fetch(FN+"store-review",{method:"POST",headers:{"Content-Type":"application/json",apikey:ANON,Authorization:"Bearer "+ANON},body:JSON.stringify({slug:rf.getAttribute("data-slug"),name:name,email:email,rating:chosen,body:body})})
+        .then(function(r){return r.json();})
+        .then(function(d){ b.disabled=false;
+          if(d.ok){ rf.reset(); chosen=0; paint(0); note.textContent="Thank you! Your review will appear once it's approved."; }
+          else { note.textContent=d.error||"Something went wrong, please try again."; } })
+        .catch(function(){ b.disabled=false; note.textContent="Something went wrong, please try again."; });
+    });
+  }
 })();
 </script>`;
 
@@ -451,6 +500,40 @@ function membershipPanel(){
   </div></div></section>`;
 }
 
+// ── Reviews: social proof that populates over time (approved only) ──
+function starHtml(rating){
+  const r = Math.round(rating); let s = "";
+  for(let i=1;i<=5;i++){ s += `<span class="star${i<=r?' on':''}">★</span>`; }
+  return `<span class="stars" aria-label="${r} out of 5">${s}</span>`;
+}
+function ratingSummary(reviews){
+  if(!reviews || !reviews.length) return "";
+  const avg = reviews.reduce((a,r)=>a+r.rating,0)/reviews.length;
+  return `<a class="pd-rating" href="#reviews">${starHtml(avg)}<span class="pd-rating-n">${avg.toFixed(1)} · ${reviews.length} review${reviews.length>1?"s":""}</span></a>`;
+}
+function reviewsSection(p, reviews){
+  reviews = reviews || [];
+  const list = reviews.length
+    ? `<div class="reviews-grid">${reviews.map(r=>`<div class="review"><div class="rv-head">${starHtml(r.rating)}<span class="rv-name">${esc(r.name)}</span></div><p class="rv-body">${esc(r.body)}</p></div>`).join("")}</div>`
+    : `<p class="rv-empty">No reviews yet — be the first to share what you thought.</p>`;
+  const form = `<form class="review-form" id="review-form" data-slug="${p.slug}">
+      <h3>Leave a review</h3>
+      <div class="rv-stars" aria-label="Your rating">${[1,2,3,4,5].map(()=>`<button type="button" class="rv-star" aria-label="Rate">★</button>`).join("")}</div>
+      <div class="rv-fields">
+        <input type="text" name="name" placeholder="Your name" autocomplete="name" required>
+        <input type="email" name="email" placeholder="Email (optional, never shown)" autocomplete="email">
+      </div>
+      <textarea name="body" rows="3" placeholder="What did you think?" required></textarea>
+      <button class="btn" type="submit">Submit review</button>
+      <div class="form-note" id="rv-note"></div>
+    </form>`;
+  return `<section class="reviews-sec" id="reviews"><div class="wrap">
+    <div class="col-head"><h2>Reviews</h2>${reviews.length?`<div>${ratingSummary(reviews)}</div>`:""}</div>
+    ${list}
+    ${form}
+  </div></section>`;
+}
+
 function storeIndexPage(){
   const paid = STORE.filter(p=>p.price>0 && p.collection!=="courses");
   const free = STORE.filter(p=>p.price===0);
@@ -476,7 +559,7 @@ function storeIndexPage(){
   return shell({ title:"Store, Matthew Cawood", desc:"Piano books, guides and courses from Matthew Cawood. Sight-reading, theory, technique and the Art of Understanding Music course.", body, active:"/store/", extraHead:STORE_CSS });
 }
 
-function storeProductPage(p){
+function storeProductPage(p, reviews=[]){
   const isFree = p.price===0;
   const curriculum = p.chapters ? `<div class="curriculum"><h2>What's inside</h2>
     ${p.chapters.map((c,i)=>`<div class="chapter"><div class="ch-n">Chapter ${i+1}</div><h3>${esc(c[0])}</h3><p>${esc(c[1])}</p></div>`).join("")}
@@ -501,7 +584,7 @@ function storeProductPage(p){
 
   const banner = `<div class="store-banner" id="success-banner" style="display:none">
     <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-    <div><strong>Payment received.</strong> Check your inbox, ${p.type==="course"?"we've emailed your course access link.":"we've emailed your download link."}</div>
+    <div><strong>Payment received.</strong> Check your inbox, ${p.type==="course"?"we've emailed your course access link.":"we've emailed your download link."} Want to keep going? <a href="${MEMBERSHIP_URL}" style="color:var(--gold-dim);font-weight:700">Explore The Practice Room →</a></div>
   </div>`;
 
   const body = `<section class="page-intro" style="padding-bottom:0"><div class="wrap">
@@ -520,6 +603,7 @@ function storeProductPage(p){
           <p class="pd-tag">${p.type==="course"?"Video Course":"Digital Download"}</p>
           <h1>${esc(p.title)}</h1>
           <p class="pd-tagline">${esc(p.tagline)}</p>
+          ${ratingSummary(reviews)}
           <div class="pd-blurb">${p.blurb.map(b=>`<p>${esc(b)}</p>`).join("")}</div>
           ${buyBox}
           ${trustRow()}
@@ -527,6 +611,7 @@ function storeProductPage(p){
         </div>
       </div>
     </div></section>
+    ${reviewsSection(p, reviews)}
     ${crossSell(p)}
     ${membershipPanel()}
     ${storeJS}
@@ -632,13 +717,22 @@ for(let i=0;i<articles.length;i++){
 }
 console.log(`Generated archive + ${articles.length} article pages.`);
 
+// ── reviews (approved only; tolerant of the table not existing yet) ──
+const REVIEWS = {};
+try {
+  const rr = await fetch(`${SUPA}/rest/v1/store_reviews?select=slug,name,rating,body,created_at&status=eq.approved&order=created_at.desc`,
+    { headers:{ apikey:ANON, Authorization:`Bearer ${ANON}` } });
+  if(rr.ok){ for(const r of await rr.json()){ (REVIEWS[r.slug] ??= []).push(r); } console.log(`Fetched approved reviews for ${Object.keys(REVIEWS).length} products`); }
+  else { console.warn("reviews fetch skipped:", rr.status); }
+} catch(e){ console.warn("reviews fetch error:", e.message); }
+
 // ── store ──
 await mkdir(join(ROOT,"store"), { recursive:true });
 await writeFile(join(ROOT,"store","index.html"), storeIndexPage());
 for(const p of STORE){
   const dir=join(ROOT,"store",p.slug);
   await mkdir(dir,{recursive:true});
-  await writeFile(join(dir,"index.html"), storeProductPage(p));
+  await writeFile(join(dir,"index.html"), storeProductPage(p, REVIEWS[p.slug]||[]));
 }
 await mkdir(join(ROOT,"store","learn"), { recursive:true });
 await writeFile(join(ROOT,"store","learn","index.html"), storeLearnPage());
