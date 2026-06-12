@@ -225,6 +225,28 @@ const STORE = [
       "This is the exact planner Matthew devised at music college to learn in two hours what was previously taking eight.",
     ] },
 ];
+
+// ── Funnel helpers: authority proof, cross-sell map, membership ──────────
+const MEMBERSHIP_URL = "https://app.matthewcawood.com/signup";
+const AUTHORITY = [
+  ["143K", "YouTube subscribers"],
+  ["40M+", "Video views"],
+  ["1,000s", "Students taught"],
+];
+// "Pairs well with" — companion products shown at full price (no discount).
+const RELATED = {
+  "beginner-sight-reading-book":        ["beginners-guide-reading-sheet-music","the-art-of-understanding-music"],
+  "beginners-guide-reading-sheet-music":["beginner-sight-reading-book","the-art-of-understanding-music"],
+  "playing-by-ear-theory":              ["30-ways-to-play-a-chord","4-levels-chord-patterns"],
+  "30-ways-to-play-a-chord":            ["4-levels-chord-patterns","how-to-reharmonise"],
+  "4-levels-chord-patterns":            ["30-ways-to-play-a-chord","how-to-reharmonise"],
+  "how-to-reharmonise":                 ["4-levels-chord-patterns","playing-by-ear-theory"],
+  "technical-exercises":                ["4-fun-techniques","the-art-of-understanding-music"],
+  "4-fun-techniques":                   ["technical-exercises","the-art-of-understanding-music"],
+  "practice-planner":                   ["the-art-of-understanding-music","beginner-sight-reading-book"],
+  "the-art-of-understanding-music":     ["beginners-guide-reading-sheet-music","playing-by-ear-theory"],
+};
+const bySlug = s => STORE.find(p=>p.slug===s);
 const gbp = pence => pence % 100 === 0 ? `£${pence/100}` : `£${(pence/100).toFixed(2)}`;
 const priceLabel = p => p.price === 0 ? "Free" : gbp(p.price);
 
@@ -284,6 +306,46 @@ const STORE_CSS = `<style>
 .pd-back{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-weight:600;font-size:.9rem;text-decoration:none;margin-bottom:6px}
 .pd-back:hover{color:var(--gold-dim)}
 .pd-back svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+/* ── featured course banner ── */
+.store-feature{padding:30px 0 8px}
+.feat-card{display:grid;grid-template-columns:300px 1fr;gap:34px;align-items:center;text-decoration:none;color:var(--text);
+  background:linear-gradient(110deg,rgba(245,197,24,.07),var(--surface) 55%);border:1px solid var(--border-2);border-radius:22px;padding:26px;
+  transition:transform .18s ease,border-color .2s,box-shadow .25s}
+.feat-card:hover{transform:translateY(-4px);border-color:rgba(245,197,24,.5);box-shadow:0 40px 80px -44px rgba(245,197,24,.18)}
+.feat-cover{border-radius:14px;overflow:hidden;border:1px solid var(--border);background:#0d0d0f}
+.feat-cover img{width:100%;display:block}
+.feat-eyebrow{font-size:.74rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--gold-dim);margin:0 0 8px}
+.feat-body h2{font-size:clamp(1.5rem,3vw,2.1rem);margin:0 0 8px;line-height:1.12}
+.feat-tag{color:var(--muted);font-size:1.05rem;margin:0 0 14px}
+.feat-points{list-style:none;padding:0;margin:0 0 14px;display:flex;flex-wrap:wrap;gap:8px 16px}
+.feat-points li{position:relative;padding-left:20px;color:var(--text);font-size:.92rem}
+.feat-points li::before{content:"";position:absolute;left:0;top:7px;width:8px;height:8px;border-radius:50%;background:var(--gold-dim)}
+.feat-note{color:var(--muted-2);font-size:.86rem;margin:0 0 16px;max-width:520px}
+.feat-foot{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.feat-foot .price{font-size:1.6rem;font-weight:800}
+.feat-go{color:var(--gold-dim);font-weight:800;font-size:.95rem}
+@media(max-width:760px){.feat-card{grid-template-columns:1fr;gap:20px}.feat-cover{max-width:220px}}
+/* ── free resources section (lighter) ── */
+.store-free-sec .product-grid.compact{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:18px}
+.store-free-sec .product-card{background:transparent}
+.store-free-sec .product-card .cover{aspect-ratio:1/1.1}
+/* ── authority trust strip ── */
+.trust-row{display:flex;gap:14px;flex-wrap:wrap;margin:18px 0 4px}
+.trust-stat{flex:1;min-width:110px;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:14px 12px}
+.trust-stat .tn{display:block;font-size:1.5rem;font-weight:800;color:var(--gold-dim);line-height:1}
+.trust-stat .tl{display:block;font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-top:5px}
+.trust-sec{padding:30px 0 8px}
+.trust-cap{text-align:center;color:var(--muted);font-size:.92rem;margin:14px 0 0}
+/* ── membership CTA panel ── */
+.member-cta{padding:40px 0 12px}
+.member-inner{display:flex;align-items:center;justify-content:space-between;gap:28px;flex-wrap:wrap;
+  background:linear-gradient(110deg,#16140d,var(--surface));border:1px solid var(--border-2);border-radius:20px;padding:30px 32px;position:relative;overflow:hidden}
+.member-inner::after{content:"";position:absolute;right:-50px;top:-50px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(245,197,24,.12),transparent 70%)}
+.member-copy{position:relative;max-width:620px}
+.member-copy h2{font-size:clamp(1.4rem,3vw,1.9rem);margin:6px 0 10px}
+.member-copy p{color:var(--muted);margin:0;line-height:1.6}
+.member-inner .btn{position:relative;flex:none}
+@media(max-width:760px){.member-inner{padding:24px}}
 </style>`;
 
 // Client script shared by store pages: localise prices + buy / free-download flow.
@@ -339,21 +401,73 @@ function productCard(p){
   </a>`;
 }
 
+// Compact authority strip — social proof you can show today (no sourcing needed).
+function trustRow(){
+  return `<div class="trust-row">
+    ${AUTHORITY.map(a=>`<div class="trust-stat"><span class="tn">${a[0]}</span><span class="tl">${a[1]}</span></div>`).join("")}
+  </div>`;
+}
+
+// Flagship course, featured at the top of the storefront.
+function featuredCourseBanner(){
+  const c = bySlug("the-art-of-understanding-music"); if(!c) return "";
+  return `<section class="store-feature"><div class="wrap">
+    <a class="feat-card" href="/store/${c.slug}/">
+      <div class="feat-cover"><img src="/assets/img/store/${c.slug}.webp" alt="${esc(c.title)}" loading="lazy"></div>
+      <div class="feat-body">
+        <p class="feat-eyebrow">★ Flagship course · Video</p>
+        <h2>${esc(c.title)}</h2>
+        <p class="feat-tag">${esc(c.tagline)}</p>
+        <ul class="feat-points">${c.chapters.map(ch=>`<li>${esc(ch[0])}</li>`).join("")}</ul>
+        <p class="feat-note">Originally a 3-hour live masterclass, restructured into a step-by-step course you take at your own pace.</p>
+        <div class="feat-foot"><span class="price" data-price-slug="${c.slug}">${priceLabel(c)}</span><span class="feat-go">Explore the course →</span></div>
+      </div>
+    </a>
+  </div></section>`;
+}
+
+// "Pairs well with" — up to 3 related products at full price.
+function crossSell(p){
+  const rel = (RELATED[p.slug]||[]).map(bySlug).filter(Boolean).slice(0,3);
+  if(!rel.length) return "";
+  return `<section class="store-collection"><div class="wrap">
+    <div class="col-head"><h2>Pairs well with</h2></div>
+    <div class="product-grid">${rel.map(productCard).join("")}</div>
+  </div></section>`;
+}
+
+// The real funnel: turn one-off buyers into recurring members.
+function membershipPanel(){
+  return `<section class="member-cta"><div class="wrap"><div class="member-inner">
+    <div class="member-copy">
+      <p class="eyebrow">Go further</p>
+      <h2>Keep going inside The Practice Room</h2>
+      <p>Matthew's piano platform: structured practice tracking, a growing pieces library, theory guides, tools and a community — everything in these resources, taught in depth and built for how you actually learn.</p>
+    </div>
+    <a class="btn" href="${MEMBERSHIP_URL}">Explore The Practice Room →</a>
+  </div></div></section>`;
+}
+
 function storeIndexPage(){
-  const cols = COLLECTIONS.map(c=>{
-    const items = STORE.filter(p=>p.collection===c.key);
-    if(!items.length) return "";
-    return `<section class="store-collection"><div class="wrap">
-      <div class="col-head"><h2>${c.title}</h2><p>${c.blurb}</p></div>
-      <div class="product-grid">${items.map(productCard).join("")}</div>
-    </div></section>`;
-  }).join("");
+  const paid = STORE.filter(p=>p.price>0 && p.collection!=="courses");
+  const free = STORE.filter(p=>p.price===0);
+  const booksSection = paid.length ? `<section class="store-collection"><div class="wrap">
+      <div class="col-head"><h2>Books &amp; Guides</h2><p>In-depth books and exercise collections — instant digital download.</p></div>
+      <div class="product-grid">${paid.map(productCard).join("")}</div>
+    </div></section>` : "";
+  const freeSection = free.length ? `<section class="store-collection store-free-sec"><div class="wrap">
+      <div class="col-head"><h2>Free resources</h2><p>Genuinely useful PDFs — pop in your email and they're yours.</p></div>
+      <div class="product-grid compact">${free.map(productCard).join("")}</div>
+    </div></section>` : "";
   const body = `<section class="store-hero"><div class="wrap">
       <p class="eyebrow">The Store</p>
       <h1>Books, guides &amp; courses<br>to deepen your playing.</h1>
       <p class="lede">Downloadable resources and in-depth courses from Matthew Cawood, from free exercises to the complete Art of Understanding Music course.</p>
     </div></section>
-    ${cols}
+    ${featuredCourseBanner()}
+    ${booksSection}
+    ${freeSection}
+    <section class="trust-sec"><div class="wrap">${trustRow()}<p class="trust-cap">Trusted by pianists worldwide through Matthew's YouTube teaching.</p></div></section>
     ${newsletterCTA}
     ${storeJS}`;
   return shell({ title:"Store, Matthew Cawood", desc:"Piano books, guides and courses from Matthew Cawood. Sight-reading, theory, technique and the Art of Understanding Music course.", body, active:"/store/", extraHead:STORE_CSS });
@@ -405,10 +519,13 @@ function storeProductPage(p){
           <p class="pd-tagline">${esc(p.tagline)}</p>
           <div class="pd-blurb">${p.blurb.map(b=>`<p>${esc(b)}</p>`).join("")}</div>
           ${buyBox}
+          ${trustRow()}
           ${curriculum}
         </div>
       </div>
     </div></section>
+    ${crossSell(p)}
+    ${membershipPanel()}
     ${storeJS}
     <script>(function(){var m=document.getElementById("pd-main");if(!m)return;document.querySelectorAll(".pd-thumb").forEach(function(t){t.addEventListener("click",function(){m.src=t.getAttribute("data-src");document.querySelectorAll(".pd-thumb").forEach(function(x){x.classList.remove("active")});t.classList.add("active");});});})();</script>
     <script>if(/[?&]success=true/.test(location.search)){var b=document.getElementById("success-banner");if(b)b.style.display="flex";}</script>`;
