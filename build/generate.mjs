@@ -75,6 +75,7 @@ ${header(active)}
 ${body}
 ${footer()}
 ${subscribeJS}
+<script src="/assets/reveal.js" defer></script>
 </body></html>`;
 }
 
@@ -247,6 +248,22 @@ const RELATED = {
   "the-art-of-understanding-music":     ["beginners-guide-reading-sheet-music","playing-by-ear-theory"],
 };
 const bySlug = s => STORE.find(p=>p.slug===s);
+
+// Units sold/downloaded — combined Squarespace (pre-2026) + Shopify (2026+) totals.
+const SOLD = {
+  "beginner-sight-reading-book":1709, "technical-exercises":1270,
+  "beginners-guide-reading-sheet-music":671, "4-levels-chord-patterns":580,
+  "4-fun-techniques":361, "practice-planner":248, "how-to-reharmonise":180,
+  "30-ways-to-play-a-chord":93, "the-art-of-understanding-music":51, "playing-by-ear-theory":29,
+};
+const TOTAL_SOLD = Object.values(SOLD).reduce((a,b)=>a+b,0); // ~5,192
+const commas = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g,",");
+const roundSold = n => n>=1000 ? Math.floor(n/100)*100 : n>=100 ? Math.floor(n/50)*50 : Math.floor(n/10)*10;
+function soldLabel(p){
+  const n = SOLD[p.slug]; if(!n) return "";
+  const verb = p.price>0 ? (p.type==="course"?"enrolled":"sold") : "downloaded";
+  return `${commas(roundSold(n))}+ ${verb}`;
+}
 const gbp = pence => pence % 100 === 0 ? `£${pence/100}` : `£${(pence/100).toFixed(2)}`;
 const priceLabel = p => p.price === 0 ? "Free" : gbp(p.price);
 
@@ -374,6 +391,18 @@ const STORE_CSS = `<style>
 .review-form textarea{width:100%;box-sizing:border-box;border:1.5px solid var(--border-2);background:var(--bg);border-radius:11px;padding:12px 14px;font-size:1rem;color:var(--text);font-family:inherit;line-height:1.6;resize:vertical;min-height:88px}
 .rv-fields input:focus,.review-form textarea:focus{outline:none;border-color:var(--accent)}
 .review-form .btn{margin-top:14px}
+/* ── sold-count social proof ── */
+.pc-sold{font-size:.76rem;font-weight:700;color:var(--gold-dim);margin-top:-2px}
+.pd-proof{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:-8px 0 18px}
+.pd-proof .pd-rating{margin:0}
+.pd-sold{display:inline-flex;align-items:center;gap:5px;font-size:.85rem;font-weight:700;color:var(--gold-dim);background:rgba(245,197,24,.08);border:1px solid rgba(245,197,24,.22);border-radius:100px;padding:5px 12px}
+/* ── price skeleton (avoids the GBP→local flash) ── */
+.price-skel{display:inline-block;width:64px;height:1em;vertical-align:-2px;border-radius:6px;
+  background:linear-gradient(100deg,var(--surface-2) 30%,var(--border-2) 50%,var(--surface-2) 70%);
+  background-size:200% 100%;animation:priceShimmer 1.1s ease-in-out infinite}
+.pd-price-row .price-skel,.feat-foot .price-skel{width:88px;height:1.2em}
+@keyframes priceShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@media(prefers-reduced-motion:reduce){.price-skel{animation:none}}
 </style>`;
 
 // Client script shared by store pages: localise prices + buy / free-download flow.
@@ -382,15 +411,19 @@ const storeJS = `<script>
   var SUPA=${JSON.stringify(SUPA)}, ANON=${JSON.stringify(ANON)};
   var FN=SUPA+"/functions/v1/";
   function fmt(sym,major){ return sym + (Number.isInteger(major)?major:major.toFixed(2)); }
-  // Localise any [data-price-slug] / [data-price-free] elements.
+  // Localise [data-price-slug] elements. Show a skeleton until the currency
+  // resolves (no GBP→local flash); fall back to the rendered GBP on timeout/fail.
+  var priceEls=[].slice.call(document.querySelectorAll("[data-price-slug]"));
+  priceEls.forEach(function(el){ el.setAttribute("data-fallback", el.textContent); el.innerHTML='<span class="price-skel"></span>'; });
+  function restore(){ priceEls.forEach(function(el){ if(el.querySelector(".price-skel")) el.textContent=el.getAttribute("data-fallback"); }); }
+  var priceTimer=setTimeout(restore, 2500);
   fetch(FN+"store-checkout?action=prices",{headers:{apikey:ANON,Authorization:"Bearer "+ANON}})
     .then(function(r){return r.ok?r.json():null;})
-    .then(function(d){ if(!d||!d.prices)return;
-      document.querySelectorAll("[data-price-slug]").forEach(function(el){
-        var s=el.getAttribute("data-price-slug"), v=d.prices[s];
-        if(v===0){el.textContent="Free";} else if(v){el.textContent=fmt(d.symbol,v);}
-      });
-    }).catch(function(){});
+    .then(function(d){ clearTimeout(priceTimer);
+      if(!d||!d.prices){ restore(); return; }
+      priceEls.forEach(function(el){ var s=el.getAttribute("data-price-slug"), v=d.prices[s];
+        el.textContent = (v===0) ? "Free" : (v ? fmt(d.symbol,v) : el.getAttribute("data-fallback")); });
+    }).catch(function(){ clearTimeout(priceTimer); restore(); });
   // Paid buy buttons.
   document.querySelectorAll("[data-buy]").forEach(function(btn){
     btn.addEventListener("click",function(){
@@ -443,11 +476,12 @@ const storeJS = `<script>
 
 function productCard(p){
   const freeCls = p.price===0 ? " free" : "";
-  return `<a class="product-card" href="/store/${p.slug}/">
+  return `<a class="product-card reveal" href="/store/${p.slug}/">
     <div class="cover"><img src="/assets/img/store/${p.slug}.webp" alt="${esc(p.title)}" loading="lazy"></div>
     <div class="pc-body">
       <div class="pc-tag">${p.type==="course"?"Course":"PDF"}</div>
       <h3>${esc(p.title)}</h3>
+      ${soldLabel(p)?`<div class="pc-sold">★ ${soldLabel(p)}</div>`:""}
       <div class="pc-foot"><span class="price${freeCls}" data-price-slug="${p.slug}">${priceLabel(p)}</span><span class="go">View →</span></div>
     </div>
   </a>`;
@@ -464,7 +498,7 @@ function trustRow(){
 function featuredCourseBanner(){
   const c = bySlug("the-art-of-understanding-music"); if(!c) return "";
   return `<section class="store-feature"><div class="wrap">
-    <a class="feat-card" href="/store/${c.slug}/">
+    <a class="feat-card reveal" href="/store/${c.slug}/">
       <div class="feat-cover"><img src="/assets/img/store/${c.slug}.webp" alt="${esc(c.title)}" loading="lazy"></div>
       <div class="feat-body">
         <p class="feat-eyebrow">★ Flagship course · Video</p>
@@ -490,7 +524,7 @@ function crossSell(p){
 
 // The real funnel: turn one-off buyers into recurring members.
 function membershipPanel(){
-  return `<section class="member-cta"><div class="wrap"><div class="member-inner">
+  return `<section class="member-cta reveal"><div class="wrap"><div class="member-inner">
     <div class="member-copy">
       <p class="eyebrow">Go further</p>
       <h2>Keep going inside The Practice Room</h2>
@@ -514,9 +548,9 @@ function ratingSummary(reviews){
 function reviewsSection(p, reviews){
   reviews = reviews || [];
   const list = reviews.length
-    ? `<div class="reviews-grid">${reviews.map(r=>`<div class="review"><div class="rv-head">${starHtml(r.rating)}<span class="rv-name">${esc(r.name)}</span></div><p class="rv-body">${esc(r.body)}</p></div>`).join("")}</div>`
+    ? `<div class="reviews-grid">${reviews.map(r=>`<div class="review reveal"><div class="rv-head">${starHtml(r.rating)}<span class="rv-name">${esc(r.name)}</span></div><p class="rv-body">${esc(r.body)}</p></div>`).join("")}</div>`
     : `<p class="rv-empty">No reviews yet — be the first to share what you thought.</p>`;
-  const form = `<form class="review-form" id="review-form" data-slug="${p.slug}">
+  const form = `<form class="review-form reveal" id="review-form" data-slug="${p.slug}">
       <h3>Leave a review</h3>
       <div class="rv-stars" aria-label="Your rating">${[1,2,3,4,5].map(()=>`<button type="button" class="rv-star" aria-label="Rate">★</button>`).join("")}</div>
       <div class="rv-fields">
@@ -553,7 +587,7 @@ function storeIndexPage(){
     ${featuredCourseBanner()}
     ${booksSection}
     ${freeSection}
-    <section class="trust-sec"><div class="wrap">${trustRow()}<p class="trust-cap">Trusted by pianists worldwide through Matthew's YouTube teaching.</p></div></section>
+    <section class="trust-sec reveal"><div class="wrap">${trustRow()}<p class="trust-cap">Over <strong>${commas(Math.floor(TOTAL_SOLD/100)*100)}</strong> books, courses &amp; resources in pianists' hands — and counting.</p></div></section>
     ${newsletterCTA}
     ${storeJS}`;
   return shell({ title:"Store, Matthew Cawood", desc:"Piano books, guides and courses from Matthew Cawood. Sight-reading, theory, technique and the Art of Understanding Music course.", body, active:"/store/", extraHead:STORE_CSS });
@@ -603,7 +637,7 @@ function storeProductPage(p, reviews=[]){
           <p class="pd-tag">${p.type==="course"?"Video Course":"Digital Download"}</p>
           <h1>${esc(p.title)}</h1>
           <p class="pd-tagline">${esc(p.tagline)}</p>
-          ${ratingSummary(reviews)}
+          <div class="pd-proof">${ratingSummary(reviews)}${soldLabel(p)?`<span class="pd-sold">★ ${soldLabel(p)}</span>`:""}</div>
           <div class="pd-blurb">${p.blurb.map(b=>`<p>${esc(b)}</p>`).join("")}</div>
           ${buyBox}
           ${trustRow()}

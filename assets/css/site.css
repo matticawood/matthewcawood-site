@@ -255,3 +255,8 @@ body:has(.article-head) .back-link:hover{color:#9a6f12}
 .reveal{opacity:0;transform:translateY(16px);transition:opacity .55s cubic-bezier(.16,1,.3,1),transform .55s cubic-bezier(.16,1,.3,1)}
 .reveal.visible{opacity:1;transform:none}
 @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+/* ── premium on-load entrance for the top of each page ── */
+@media(prefers-reduced-motion:no-preference){
+  .hero>.wrap,.page-intro>.wrap,.store-hero>.wrap{animation:riseIn .75s cubic-bezier(.16,1,.3,1) both}
+  @keyframes riseIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+}
