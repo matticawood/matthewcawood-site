@@ -6,3 +6,19 @@
 
 [build.environment]
   NODE_VERSION = "20"
+
+# Old Shopify store subdomain → new storefront.
+# store.matthewcawood.com is added as a domain alias on this Netlify site; all of
+# its traffic 301s to /store/. Shopify paths (/products, /collections) don't map
+# to the new store, so everything lands on the storefront root rather than 404.
+[[redirects]]
+  from = "https://store.matthewcawood.com/*"
+  to = "https://matthewcawood.com/store/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://store.matthewcawood.com/*"
+  to = "https://matthewcawood.com/store/"
+  status = 301
+  force = true
