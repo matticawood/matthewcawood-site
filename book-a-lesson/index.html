@@ -133,7 +133,7 @@
   /* timezone selector */
   .tz-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:.84rem;color:var(--muted);margin:0 0 16px;padding:0 0 16px;border-bottom:1px solid var(--border)}
   .tz-row svg{width:15px;height:15px;stroke:var(--gold-deep);fill:none;stroke-width:1.7;flex:0 0 auto}
-  .tz-select{background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:8px 30px 8px 11px;font-family:inherit;font-size:.84rem;cursor:pointer;max-width:100%;
+  .tz-select{background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:8px 30px 8px 11px;font-family:inherit;font-size:.84rem;cursor:pointer;max-width:100%;color-scheme:dark;
     appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239a9aa2' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;background-size:14px}
   .tz-select:hover{border-color:var(--border-2)}
   .tz-select:focus{outline:none;border-color:var(--accent)}
@@ -259,7 +259,7 @@
       <div class="tz-row">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/></svg>
         <span>Times shown in your time zone:</span>
-        <select id="tz-select" onchange="onTzChange(this.value)" aria-label="Time zone"></select>
+        <select id="tz-select" class="tz-select" onchange="onTzChange(this.value)" aria-label="Time zone"></select>
       </div>
       <div class="cal-top"><button id="nav-prev" onclick="navPrev()">‹</button><div class="cal-range" id="cal-range"></div><button id="nav-next" onclick="navNext()">›</button></div>
       <div class="cal-grid" id="cal-grid"></div>
