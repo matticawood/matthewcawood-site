@@ -3,5 +3,6 @@ node_modules/
 .DS_Store
 # generated at build time by build/generate.mjs
 monday-music-tips/
+/store/
 # one-time migration input (1.3MB Squarespace export) — not needed for builds
 build/export.xml
