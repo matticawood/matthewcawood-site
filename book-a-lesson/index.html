@@ -130,6 +130,13 @@
   .cal-day.avail:hover{border-color:var(--accent);background:var(--surface-3)}
   .cal-day.selected{background:var(--accent);color:#1a1400;font-weight:800}
   .slots-wrap{margin-top:6px}
+  /* timezone selector */
+  .tz-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:.84rem;color:var(--muted);margin:0 0 16px;padding:0 0 16px;border-bottom:1px solid var(--border)}
+  .tz-row svg{width:15px;height:15px;stroke:var(--gold-deep);fill:none;stroke-width:1.7;flex:0 0 auto}
+  .tz-select{background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:8px 30px 8px 11px;font-family:inherit;font-size:.84rem;cursor:pointer;max-width:100%;
+    appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239a9aa2' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;background-size:14px}
+  .tz-select:hover{border-color:var(--border-2)}
+  .tz-select:focus{outline:none;border-color:var(--accent)}
   .slots-day-lbl{font-weight:700;color:#fff;margin:16px 0 12px}
   .slots-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:9px}
   .slot-btn{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 8px;cursor:pointer;font-family:inherit;font-weight:700;color:#fff;font-size:.92rem;transition:border-color .2s}
@@ -249,6 +256,11 @@
     <h2 id="bk-title" style="margin-bottom:4px">Pick a time</h2>
     <p class="muted" id="bk-sub" style="margin:0 0 18px"></p>
     <div class="panel">
+      <div class="tz-row">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/></svg>
+        <span>Times shown in your time zone:</span>
+        <select id="tz-select" onchange="onTzChange(this.value)" aria-label="Time zone"></select>
+      </div>
       <div class="cal-top"><button id="nav-prev" onclick="navPrev()">‹</button><div class="cal-range" id="cal-range"></div><button id="nav-next" onclick="navNext()">›</button></div>
       <div class="cal-grid" id="cal-grid"></div>
       <div class="slots-wrap">
@@ -367,7 +379,29 @@ function applyPrices(){
   const bn=document.getElementById("pkg-save-amt"); if(bn) bn.textContent=money(12*LP.l60-LP.pkg12);
 }
 
-const userTZ = Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/London";
+let userTZ = Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/London";
+// ── timezone selector: full IANA list, each labelled with its current offset ──
+function tzLabel(tz){
+  try{
+    const off = new Intl.DateTimeFormat("en-GB",{timeZone:tz,timeZoneName:"shortOffset"}).formatToParts(new Date()).find(p=>p.type==="timeZoneName")?.value || "";
+    return `${tz.replace(/_/g," ")}${off?` (${off})`:""}`;
+  }catch(e){ return tz.replace(/_/g," "); }
+}
+function tzShort(){
+  try{ return new Intl.DateTimeFormat("en-GB",{timeZone:userTZ,timeZoneName:"short"}).formatToParts(new Date()).find(p=>p.type==="timeZoneName")?.value || ""; }catch(e){ return ""; }
+}
+function populateTz(){
+  const sel=document.getElementById("tz-select"); if(!sel) return;
+  let zones=[]; try{ zones=Intl.supportedValuesOf("timeZone"); }catch(e){}
+  if(!zones.length) zones=["Europe/London","Europe/Paris","Europe/Berlin","America/New_York","America/Toronto","America/Chicago","America/Los_Angeles","Asia/Dubai","Asia/Kolkata","Asia/Singapore","Asia/Tokyo","Australia/Sydney","Pacific/Auckland"];
+  if(!zones.includes(userTZ)) zones.unshift(userTZ);
+  sel.innerHTML = zones.map(z=>`<option value="${z}"${z===userTZ?" selected":""}>${tzLabel(z)}</option>`).join("");
+}
+function onTzChange(tz){
+  userTZ = tz;
+  selDate=null; selSlot=null; clearSlots(); loadingAvail=true; renderMonth();
+  loadMonthAvailability(calYear,calMonth).then(()=>{ renderMonth(); autoSelectFirst(); });
+}
 let mode = "single";        // 'single' | 'redeem'
 let clinic = null;          // selected product
 let redeemEmail = "";
@@ -391,7 +425,7 @@ function startBooking(){
   document.getElementById("bk-title").textContent = mode==="redeem" ? "Book your lesson" : `Pick a time`;
   document.getElementById("bk-sub").textContent = mode==="redeem"
     ? `1-hour lesson · using a package credit` : `${clinic.title} · ${clinic.price}`;
-  clearSlots(); show("screen-booking"); renderMonth();
+  populateTz(); clearSlots(); show("screen-booking"); renderMonth();
   loadMonthAvailability(calYear,calMonth).then(()=>{ renderMonth(); autoSelectFirst(); });
 }
 function backToStart(){ show(mode==="redeem" ? "screen-redeem-email" : "screen-products"); }
@@ -518,7 +552,7 @@ function onSlot(iso,btn){ selSlot=iso; document.querySelectorAll(".slot-btn").fo
 function openDetails(iso){
   const dateStr=new Date(iso).toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:userTZ});
   document.getElementById("det-title").textContent = mode==="redeem" ? "1-hour lesson (package)" : `${clinic.title} · ${clinic.price}`;
-  document.getElementById("det-meta").textContent = `${dateStr} at ${fmtTime(iso)}`;
+  document.getElementById("det-meta").textContent = `${dateStr} at ${fmtTime(iso)} ${tzShort()}`.trim();
   if(mode==="redeem"){ document.getElementById("inp-email").value=redeemEmail; document.getElementById("inp-email").readOnly=true; }
   else { document.getElementById("inp-email").readOnly=false; }
   document.getElementById("err-msg").style.display="none";
