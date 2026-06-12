@@ -471,6 +471,22 @@ const storeJS = `<script>
         .catch(function(){ b.disabled=false; note.textContent="Something went wrong, please try again."; });
     });
   }
+  // Live reviews: fetch approved reviews for this product (instant, no rebuild).
+  var rMount=document.getElementById("reviews-mount"), rfEl=document.getElementById("review-form");
+  if(rMount && rfEl){
+    var esc=function(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");};
+    var stars=function(n){var r=Math.round(n),o="";for(var i=1;i<=5;i++){o+='<span class="star'+(i<=r?' on':'')+'">★</span>';}return '<span class="stars">'+o+'</span>';};
+    var rSlug=rfEl.getAttribute("data-slug");
+    fetch(SUPA+"/rest/v1/store_reviews?select=name,rating,body&status=eq.approved&slug=eq."+encodeURIComponent(rSlug)+"&order=created_at.desc",{headers:{apikey:ANON,Authorization:"Bearer "+ANON}})
+      .then(function(r){return r.ok?r.json():[];})
+      .then(function(rows){
+        if(!rows||!rows.length) return;
+        var avg=rows.reduce(function(a,x){return a+x.rating;},0)/rows.length;
+        var rs=document.getElementById("pd-rating-mount");
+        if(rs){ rs.innerHTML='<a class="pd-rating" href="#reviews">'+stars(avg)+'<span class="pd-rating-n">'+avg.toFixed(1)+' · '+rows.length+' review'+(rows.length>1?'s':'')+'</span></a>'; }
+        rMount.innerHTML='<div class="col-head"><h2>Reviews</h2></div><div class="reviews-grid">'+rows.map(function(x){return '<div class="review"><div class="rv-head">'+stars(x.rating)+'<span class="rv-name">'+esc(x.name)+'</span></div><p class="rv-body">'+esc(x.body)+'</p></div>';}).join("")+'</div>';
+      }).catch(function(){});
+  }
 })();
 </script>`;
 
@@ -534,22 +550,10 @@ function membershipPanel(){
   </div></div></section>`;
 }
 
-// ── Reviews: social proof that populates over time (approved only) ──
-function starHtml(rating){
-  const r = Math.round(rating); let s = "";
-  for(let i=1;i<=5;i++){ s += `<span class="star${i<=r?' on':''}">★</span>`; }
-  return `<span class="stars" aria-label="${r} out of 5">${s}</span>`;
-}
-function ratingSummary(reviews){
-  if(!reviews || !reviews.length) return "";
-  const avg = reviews.reduce((a,r)=>a+r.rating,0)/reviews.length;
-  return `<a class="pd-rating" href="#reviews">${starHtml(avg)}<span class="pd-rating-n">${avg.toFixed(1)} · ${reviews.length} review${reviews.length>1?"s":""}</span></a>`;
-}
-function reviewsSection(p, reviews){
-  reviews = reviews || [];
-  const list = reviews.length
-    ? `<div class="reviews-grid">${reviews.map(r=>`<div class="review reveal"><div class="rv-head">${starHtml(r.rating)}<span class="rv-name">${esc(r.name)}</span></div><p class="rv-body">${esc(r.body)}</p></div>`).join("")}</div>`
-    : `<p class="rv-empty">No reviews yet — be the first to share what you thought.</p>`;
+// ── Reviews: fetched LIVE on the client (approved only) so newly-approved
+// reviews appear instantly — no rebuild. The heading + rating + list are
+// injected by storeJS only when reviews exist (nothing shown when empty).
+function reviewsSection(p){
   const form = `<form class="review-form reveal" id="review-form" data-slug="${p.slug}">
       <h3>Leave a review</h3>
       <div class="rv-stars" aria-label="Your rating">${[1,2,3,4,5].map(()=>`<button type="button" class="rv-star" aria-label="Rate">★</button>`).join("")}</div>
@@ -562,8 +566,7 @@ function reviewsSection(p, reviews){
       <div class="form-note" id="rv-note"></div>
     </form>`;
   return `<section class="reviews-sec" id="reviews"><div class="wrap">
-    <div class="col-head"><h2>Reviews</h2>${reviews.length?`<div>${ratingSummary(reviews)}</div>`:""}</div>
-    ${list}
+    <div id="reviews-mount"></div>
     ${form}
   </div></section>`;
 }
@@ -593,7 +596,7 @@ function storeIndexPage(){
   return shell({ title:"Store, Matthew Cawood", desc:"Piano books, guides and courses from Matthew Cawood. Sight-reading, theory, technique and the Art of Understanding Music course.", body, active:"/store/", extraHead:STORE_CSS });
 }
 
-function storeProductPage(p, reviews=[]){
+function storeProductPage(p){
   const isFree = p.price===0;
   const curriculum = p.chapters ? `<div class="curriculum"><h2>What's inside</h2>
     ${p.chapters.map((c,i)=>`<div class="chapter"><div class="ch-n">Chapter ${i+1}</div><h3>${esc(c[0])}</h3><p>${esc(c[1])}</p></div>`).join("")}
@@ -637,7 +640,7 @@ function storeProductPage(p, reviews=[]){
           <p class="pd-tag">${p.type==="course"?"Video Course":"Digital Download"}</p>
           <h1>${esc(p.title)}</h1>
           <p class="pd-tagline">${esc(p.tagline)}</p>
-          <div class="pd-proof">${ratingSummary(reviews)}${soldLabel(p)?`<span class="pd-sold">★ ${soldLabel(p)}</span>`:""}</div>
+          <div class="pd-proof"><span id="pd-rating-mount"></span>${soldLabel(p)?`<span class="pd-sold">★ ${soldLabel(p)}</span>`:""}</div>
           <div class="pd-blurb">${p.blurb.map(b=>`<p>${esc(b)}</p>`).join("")}</div>
           ${buyBox}
           ${trustRow()}
@@ -645,7 +648,7 @@ function storeProductPage(p, reviews=[]){
         </div>
       </div>
     </div></section>
-    ${reviewsSection(p, reviews)}
+    ${reviewsSection(p)}
     ${crossSell(p)}
     ${membershipPanel()}
     ${storeJS}
@@ -751,22 +754,13 @@ for(let i=0;i<articles.length;i++){
 }
 console.log(`Generated archive + ${articles.length} article pages.`);
 
-// ── reviews (approved only; tolerant of the table not existing yet) ──
-const REVIEWS = {};
-try {
-  const rr = await fetch(`${SUPA}/rest/v1/store_reviews?select=slug,name,rating,body,created_at&status=eq.approved&order=created_at.desc`,
-    { headers:{ apikey:ANON, Authorization:`Bearer ${ANON}` } });
-  if(rr.ok){ for(const r of await rr.json()){ (REVIEWS[r.slug] ??= []).push(r); } console.log(`Fetched approved reviews for ${Object.keys(REVIEWS).length} products`); }
-  else { console.warn("reviews fetch skipped:", rr.status); }
-} catch(e){ console.warn("reviews fetch error:", e.message); }
-
-// ── store ──
+// ── store (reviews are fetched live on the client, not at build time) ──
 await mkdir(join(ROOT,"store"), { recursive:true });
 await writeFile(join(ROOT,"store","index.html"), storeIndexPage());
 for(const p of STORE){
   const dir=join(ROOT,"store",p.slug);
   await mkdir(dir,{recursive:true});
-  await writeFile(join(dir,"index.html"), storeProductPage(p, REVIEWS[p.slug]||[]));
+  await writeFile(join(dir,"index.html"), storeProductPage(p));
 }
 await mkdir(join(ROOT,"store","learn"), { recursive:true });
 await writeFile(join(ROOT,"store","learn","index.html"), storeLearnPage());
