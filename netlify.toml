@@ -22,3 +22,16 @@
   to = "https://matthewcawood.com/store/"
   status = 301
   force = true
+
+# Old Squarespace mailing-list path (lives in every YouTube description) → the
+# "Join Monday Music Tips" signup on the homepage. 302 so it isn't hard-cached,
+# in case this later gets its own dedicated landing page.
+[[redirects]]
+  from = "/mailing-list-sign-up"
+  to = "/#subscribe"
+  status = 302
+
+[[redirects]]
+  from = "/mailing-list-sign-up/*"
+  to = "/#subscribe"
+  status = 302
