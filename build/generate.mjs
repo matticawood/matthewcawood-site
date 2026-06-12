@@ -404,82 +404,76 @@ function storeProductPage(p){
 // ── Course player (/store/learn) — token-gated, plays Mux-hosted lessons ──
 function storeLearnPage(){
   const head = STORE_CSS + `<style>
-    .learn-wrap{display:grid;grid-template-columns:1fr 320px;gap:28px;align-items:start;padding-top:26px}
-    @media(max-width:900px){.learn-wrap{grid-template-columns:1fr}}
-    .player-shell{background:#000;border:1px solid var(--border);border-radius:16px;overflow:hidden;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}
-    mux-player{width:100%;height:100%;--controls:flex}
-    .now-playing{margin:16px 2px 0}
-    .now-playing .np-ch{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gold-dim)}
-    .now-playing h2{font-size:1.3rem;margin:4px 0 0}
-    .lessons{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;position:sticky;top:96px}
-    .lessons .ls-head{padding:16px 18px;border-bottom:1px solid var(--border);font-weight:800}
-    .chap-label{padding:13px 18px 5px;font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-    .lesson-row{display:flex;gap:11px;align-items:center;padding:11px 18px;cursor:pointer;border:none;background:none;width:100%;text-align:left;color:var(--text);font:inherit;border-left:3px solid transparent}
-    .lesson-row:hover{background:var(--surface-2)}
-    .lesson-row.active{background:var(--surface-2);border-left-color:var(--accent)}
-    .lesson-row .ix{width:22px;height:22px;border-radius:50%;background:var(--bg);border:1px solid var(--border);font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;color:var(--muted)}
-    .lesson-row.active .ix{background:var(--accent);color:#000;border-color:var(--accent)}
-    .lesson-row .lt{flex:1;min-width:0;font-size:.92rem;line-height:1.3}
-    .lesson-row .dur{font-size:.75rem;color:var(--muted);flex:none}
+    .learn-wrap{display:grid;grid-template-columns:1fr 330px;gap:28px;align-items:start;padding-top:22px}
+    @media(max-width:920px){.learn-wrap{grid-template-columns:1fr}}
+    .lesson-main{min-width:0}
+    .np-mod{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-dim)}
+    .lesson-main h2{font-size:1.5rem;margin:5px 0 16px;line-height:1.2}
+    .lesson-content{--text:#f2f1ef;--surface:#1b1b1f;--surface-2:#222228;--border:#2c2c32;--accent:#f5c518;--accent-dark:#f5c518;--text-muted:#9a9aa2}
+    .lesson-content .lr-body{max-width:none}
+    .ls-nav{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;position:sticky;top:96px;max-height:calc(100vh - 120px);overflow-y:auto}
+    .ls-nav .nav-head{padding:15px 18px;border-bottom:1px solid var(--border);font-weight:800;font-size:.95rem}
+    .mod-label{padding:14px 18px 6px;font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+    .lrow{display:flex;gap:11px;align-items:center;padding:10px 18px;cursor:pointer;border:none;background:none;width:100%;text-align:left;color:var(--text);font:inherit;border-left:3px solid transparent}
+    .lrow:hover{background:var(--surface-2)} .lrow.active{background:var(--surface-2);border-left-color:var(--accent)}
+    .lrow .ix{width:24px;height:24px;border-radius:50%;background:var(--bg);border:1px solid var(--border);font-size:.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;color:var(--muted)}
+    .lrow.active .ix{background:var(--accent);color:#000;border-color:var(--accent)}
+    .lrow .lt{flex:1;min-width:0;font-size:.9rem;line-height:1.3}
+    .lrow .dur{font-size:.72rem;color:var(--muted);flex:none}
+    .lesson-foot{display:flex;justify-content:space-between;gap:10px;margin-top:22px}
     .learn-state{max-width:560px;margin:40px auto;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 28px}
     .learn-state svg{width:38px;height:38px;stroke:var(--gold-dim);fill:none;stroke-width:1.6;margin-bottom:6px}
-    .learn-state h2{margin:8px 0 8px;font-size:1.4rem}
-    .learn-state p{color:var(--muted);margin:0 auto;max-width:420px;line-height:1.6}
+    .learn-state h2{margin:8px 0 8px;font-size:1.4rem} .learn-state p{color:var(--muted);margin:0 auto;max-width:420px;line-height:1.6}
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@mux/mux-player@3"></script>`;
+  <script src="/assets/lessons-render.js?v=3"></script>`;
   const body = `<section class="page-intro" style="padding-bottom:0"><div class="wrap">
       <a class="pd-back" href="/store/"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg> Store</a>
       <p class="eyebrow" style="margin-top:10px">Course</p>
       <h1 id="course-title">Loading your course…</h1>
     </div></section>
-    <section style="padding-top:8px"><div class="wrap" id="learn-root">
-      <div class="learn-state" id="learn-loading"><p>Loading…</p></div>
+    <section style="padding-top:6px"><div class="wrap" id="learn-root">
+      <div class="learn-state"><p>Loading…</p></div>
     </div></section>
     <script>
     (function(){
       var SUPA=` + JSON.stringify(SUPA) + `, ANON=` + JSON.stringify(ANON) + `;
       var root=document.getElementById("learn-root"), titleEl=document.getElementById("course-title");
       var t=new URLSearchParams(location.search).get("t");
-      function state(icon,title,msg){
-        root.innerHTML='<div class="learn-state">'+(icon||'')+'<h2>'+title+'</h2><p>'+msg+'</p></div>';
-      }
       var ICON_BOX='<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 9h18"/></svg>';
+      function state(icon,title,msg){ root.innerHTML='<div class="learn-state">'+(icon||'')+'<h2>'+title+'</h2><p>'+msg+'</p></div>'; }
       if(!t){ titleEl.textContent="Course"; state(ICON_BOX,"Missing access link","Open the course from the link in your purchase email."); return; }
-      function fmtDur(s){ if(!s)return""; var m=Math.round(s/60); return m+" min"; }
+      function fmtDur(m){ return m? (m+" min"):""; }
       fetch(SUPA+"/functions/v1/store-access?token="+encodeURIComponent(t)+"&format=json",{headers:{apikey:ANON,Authorization:"Bearer "+ANON}})
         .then(function(r){return r.json();})
         .then(function(d){
           if(!d||!d.ok){ titleEl.textContent="Course"; state(ICON_BOX,"We couldn't open this course","That access link looks invalid or expired. Reopen the link from your purchase email, or contact enquiries@matthewcawood.com."); return; }
           titleEl.textContent=d.title||"Your course";
-          var lessons=(d.lessons||[]);
-          var playable=lessons.filter(function(l){return l.playbackId && l.token;});
-          if(!lessons.length || !playable.length){
-            state(ICON_BOX,"Course content is on its way","Your access is confirmed. The video lessons are being added and will appear here shortly, you'll keep this same link.");
-            return;
-          }
-          // Build the player + lesson list
-          root.classList.add("learn-built");
-          root.innerHTML='<div class="learn-wrap"><div><div class="player-shell"><mux-player id="mux" stream-type="on-demand" accent-color="#f5c518"></mux-player></div><div class="now-playing"><div class="np-ch" id="np-ch"></div><h2 id="np-title"></h2></div></div><aside class="lessons" id="ls"></aside></div>';
-          var ls=document.getElementById("ls"), mux=document.getElementById("mux");
-          var html='<div class="ls-head">'+lessons.length+' lessons</div>', lastCh=null;
-          lessons.forEach(function(l,i){
-            if(l.chapter!=null && l.chapter!==lastCh){ lastCh=l.chapter; html+='<div class="chap-label">'+(l.chapterTitle?l.chapterTitle:("Chapter "+l.chapter))+'</div>'; }
-            var disabled=!(l.playbackId&&l.token);
-            html+='<button class="lesson-row" data-i="'+i+'"'+(disabled?' disabled style="opacity:.5;cursor:default"':'')+'><span class="ix">'+(i+1)+'</span><span class="lt">'+l.title+'</span><span class="dur">'+(disabled?'soon':fmtDur(l.durationSec))+'</span></button>';
-          });
-          ls.innerHTML=html;
-          function play(i){
-            var l=lessons[i]; if(!l||!l.playbackId||!l.token)return;
-            mux.playbackId=l.playbackId; mux.setAttribute("playback-token",l.token); mux.tokens={ playback:l.token };
-            document.getElementById("np-ch").textContent=(l.chapterTitle||(l.chapter!=null?("Chapter "+l.chapter):""));
+          var modules=(d.modules||[]);
+          var flat=[]; modules.forEach(function(m){ (m.lessons||[]).forEach(function(l){ flat.push({mod:m.title, lesson:l}); }); });
+          if(!flat.length){ state(ICON_BOX,"Course content is on its way","Your access is confirmed. The lessons are being added and will appear here shortly, you'll keep this same link."); return; }
+          root.innerHTML='<div class="learn-wrap"><div class="lesson-main"><div class="np-mod" id="np-mod"></div><h2 id="np-title"></h2><div class="lesson-content" id="lesson-content"></div><div class="lesson-foot"><button class="btn btn-ghost" id="prev-l">← Previous</button><button class="btn" id="next-l">Next lesson →</button></div></div><aside class="ls-nav" id="ls-nav"></aside></div>';
+          var nav=document.getElementById("ls-nav"), content=document.getElementById("lesson-content");
+          var total=flat.length, html='<div class="nav-head">'+total+' lessons</div>';
+          modules.forEach(function(m){ html+='<div class="mod-label">'+m.title+'</div>';
+            (m.lessons||[]).forEach(function(l){ var gi=flat.findIndex(function(f){return f.lesson===l;});
+              html+='<button class="lrow" data-i="'+gi+'"><span class="ix">'+(gi+1)+'</span><span class="lt">'+l.title+'</span><span class="dur">'+fmtDur(l.estMinutes)+'</span></button>'; }); });
+          nav.innerHTML=html;
+          var idx=0;
+          function show(i){
+            if(i<0||i>=total)return; idx=i; var f=flat[i], l=f.lesson;
+            document.getElementById("np-mod").textContent=f.mod;
             document.getElementById("np-title").textContent=l.title;
-            [].forEach.call(ls.querySelectorAll(".lesson-row"),function(b){ b.classList.toggle("active", b.getAttribute("data-i")==String(i)); });
+            content.innerHTML=window.LessonRender? LessonRender.html(l.blocks||[]) : "";
+            try{ LessonRender.init(content,{}); }catch(_){}
+            [].forEach.call(nav.querySelectorAll(".lrow"),function(b){ b.classList.toggle("active", b.getAttribute("data-i")==String(i)); });
+            document.getElementById("prev-l").style.visibility=i>0?"visible":"hidden";
+            document.getElementById("next-l").style.visibility=i<total-1?"visible":"hidden";
             try{ window.scrollTo({top:0,behavior:"smooth"}); }catch(_){}
           }
-          ls.addEventListener("click",function(e){ var b=e.target.closest(".lesson-row"); if(!b||b.disabled)return; play(parseInt(b.getAttribute("data-i"),10)); });
-          // auto-start first playable lesson
-          var first=lessons.findIndex(function(l){return l.playbackId&&l.token;});
-          if(first>=0) play(first);
+          nav.addEventListener("click",function(e){ var b=e.target.closest(".lrow"); if(!b)return; show(parseInt(b.getAttribute("data-i"),10)); });
+          document.getElementById("prev-l").onclick=function(){ show(idx-1); };
+          document.getElementById("next-l").onclick=function(){ show(idx+1); };
+          show(0);
         })
         .catch(function(){ titleEl.textContent="Course"; state(ICON_BOX,"Something went wrong","Please refresh, or reopen the link from your purchase email."); });
     })();
