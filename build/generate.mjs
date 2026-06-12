@@ -166,7 +166,7 @@ const STORE = [
       "Enough exercises to take your sight reading to a level where you can confidently read pieces of music.",
       "Divided into three sections: 150 right-hand fundamentals, 150 left-hand fundamentals, and 120 Grade 1 level exercises. The first two sections build through six incrementally harder levels and can be worked simultaneously to develop both hands at once.",
       "Available as a digital download.",
-    ], gallery:["beginner-sight-reading-book-2"] },
+    ], gallery:["beginner-sight-reading-book-2"], samples:["beginner-sight-reading-book-sample-1"] },
 
   { slug:"beginners-guide-reading-sheet-music", title:"Beginners Guide to Reading Sheet Music", collection:"books", type:"pdf", price:1499,
     tagline:"Everything you need to start reading sheet music with confidence.",
@@ -174,21 +174,21 @@ const STORE = [
       "All the information you need to get the best possible start with reading sheet music.",
       "By the end you'll understand how to read notes and rhythms, what every symbol means, and the methods for learning to read quickly, so you can approach any piece and know exactly what to do.",
       "Available as a digital download.",
-    ], gallery:["beginners-guide-reading-sheet-music-2","beginners-guide-reading-sheet-music-3"] },
+    ], gallery:["beginners-guide-reading-sheet-music-2","beginners-guide-reading-sheet-music-3"], samples:["beginners-guide-reading-sheet-music-sample-1"] },
 
   { slug:"playing-by-ear-theory", title:"Playing by Ear: Theory Exercises", collection:"books", type:"pdf", price:799,
     tagline:"The theory you need to start playing by ear.",
     blurb:[
       "Theory exercises designed to help you understand music well enough to start playing the piano by ear.",
       "Covers locating notes on the piano, sharps and flats, tones and semitones, major and minor scales, the three types of minor, and working out scales from a selection of notes.",
-    ], gallery:["playing-by-ear-theory-2"] },
+    ], gallery:["playing-by-ear-theory-2"], samples:["playing-by-ear-theory-sample-1"] },
 
   { slug:"30-ways-to-play-a-chord", title:"30 Ways to Play a Chord", collection:"books", type:"pdf", price:799,
     tagline:"30 patterns to play any chord more musically.",
     blurb:[
       "30 chord patterns you can use with any triad, each shown with both a C major and a D major triad.",
       "Includes several chord sequences to practise the patterns. Based on Matthew's YouTube video '30 Ways to Play a Chord'.",
-    ] },
+    ], samples:["30-ways-to-play-a-chord-sample-1"] },
 
   { slug:"4-fun-techniques", title:"4 Fun Techniques to Transform Your Playing", collection:"resources", type:"pdf", price:0,
     tagline:"Four exercises to level up your technique.",
@@ -276,7 +276,10 @@ const STORE_CSS = `<style>
 .product-detail .pd-cover img{width:100%;display:block}
 @media(max-width:820px){.product-detail .pd-cover{position:static;max-width:340px;margin:0 auto}}
 .product-detail .pd-gallery{position:sticky;top:96px}
-.product-detail .pd-gallery .pd-cover{position:static}
+.product-detail .pd-gallery .pd-cover{position:relative}
+.pd-sample-badge{position:absolute;top:10px;left:10px;background:rgba(10,10,11,.82);color:var(--gold-dim);border:1px solid var(--border-2);font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:8px;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.pd-sample-badge[hidden]{display:none}
+.pd-thumb.is-sample{box-shadow:inset 0 -3px 0 var(--gold-deep)}
 .pd-thumbs{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
 .pd-thumb{width:62px;height:62px;border-radius:11px;overflow:hidden;border:1.5px solid var(--border);background:#0d0d0f;padding:0;cursor:pointer;transition:border-color .15s,transform .15s}
 .pd-thumb img{width:100%;height:100%;object-fit:cover;display:block}
@@ -507,11 +510,11 @@ function storeProductPage(p){
     <section style="padding-top:6px"><div class="wrap">
       ${banner}
       <div class="product-detail">
-        ${(()=>{ const imgs=[p.slug,...(p.gallery||[])];
-          if(imgs.length<2) return `<div class="pd-cover"><img src="/assets/img/store/${p.slug}.webp" alt="${esc(p.title)}"></div>`;
+        ${(()=>{ const items=[{s:p.slug,sample:false},...(p.gallery||[]).map(s=>({s,sample:false})),...(p.samples||[]).map(s=>({s,sample:true}))];
+          if(items.length<2) return `<div class="pd-cover"><img src="/assets/img/store/${p.slug}.webp" alt="${esc(p.title)}"></div>`;
           return `<div class="pd-gallery">
-            <div class="pd-cover"><img id="pd-main" src="/assets/img/store/${p.slug}.webp" alt="${esc(p.title)}"></div>
-            <div class="pd-thumbs">${imgs.map((s,i)=>`<button type="button" class="pd-thumb${i===0?' active':''}" data-src="/assets/img/store/${s}.webp" aria-label="View image ${i+1}"><img src="/assets/img/store/${s}.webp" alt="${esc(p.title)} preview ${i+1}"></button>`).join("")}</div>
+            <div class="pd-cover"><img id="pd-main" src="/assets/img/store/${p.slug}.webp" alt="${esc(p.title)}"><span class="pd-sample-badge" id="pd-badge" hidden>Sample page</span></div>
+            <div class="pd-thumbs">${items.map((it,i)=>`<button type="button" class="pd-thumb${i===0?' active':''}${it.sample?' is-sample':''}" data-src="/assets/img/store/${it.s}.webp" data-sample="${it.sample?'1':'0'}" aria-label="${it.sample?'View sample page':'View image '+(i+1)}"><img src="/assets/img/store/${it.s}.webp" alt="${esc(p.title)}${it.sample?' sample page':' preview '+(i+1)}" loading="lazy"></button>`).join("")}</div>
           </div>`; })()}
         <div class="pd-info">
           <p class="pd-tag">${p.type==="course"?"Video Course":"Digital Download"}</p>
@@ -527,7 +530,7 @@ function storeProductPage(p){
     ${crossSell(p)}
     ${membershipPanel()}
     ${storeJS}
-    <script>(function(){var m=document.getElementById("pd-main");if(!m)return;document.querySelectorAll(".pd-thumb").forEach(function(t){t.addEventListener("click",function(){m.src=t.getAttribute("data-src");document.querySelectorAll(".pd-thumb").forEach(function(x){x.classList.remove("active")});t.classList.add("active");});});})();</script>
+    <script>(function(){var m=document.getElementById("pd-main");if(!m)return;var bd=document.getElementById("pd-badge");document.querySelectorAll(".pd-thumb").forEach(function(t){t.addEventListener("click",function(){m.src=t.getAttribute("data-src");if(bd)bd.hidden=t.getAttribute("data-sample")!=="1";document.querySelectorAll(".pd-thumb").forEach(function(x){x.classList.remove("active")});t.classList.add("active");});});})();</script>
     <script>if(/[?&]success=true/.test(location.search)){var b=document.getElementById("success-banner");if(b)b.style.display="flex";}</script>`;
   return shell({ title:`${p.title}, Store, Matthew Cawood`, desc:p.tagline, body, active:"/store/", extraHead:STORE_CSS });
 }
