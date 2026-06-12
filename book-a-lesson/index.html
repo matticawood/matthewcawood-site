@@ -21,7 +21,8 @@
   body{background:var(--bg);color:var(--text)}
   body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
     background:radial-gradient(56% 38% at 50% -6%, rgba(245,197,24,.07), transparent 62%)}
-  header.site, section, footer.site{position:relative;z-index:1}
+  section, footer.site{position:relative;z-index:1}
+  header.site{position:sticky;top:0;z-index:40}
   /* chrome → dark */
   header.site{background:rgba(10,10,11,.72)!important;-webkit-backdrop-filter:saturate(150%) blur(12px);backdrop-filter:saturate(150%) blur(12px);border-bottom:1px solid var(--border)!important}
   header.site .brand span{color:#fff} header.site .brand small{color:var(--muted-2)}

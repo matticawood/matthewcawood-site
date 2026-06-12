@@ -278,8 +278,8 @@ const STORE_CSS = `<style>
 .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:26px}
 .product-card{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;text-decoration:none;color:var(--text);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
 .product-card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 18px 40px -22px rgba(0,0,0,.8)}
-.product-card .cover{aspect-ratio:1/1.18;background:#0d0d0f;display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:1px solid var(--border)}
-.product-card .cover img{width:100%;height:100%;object-fit:cover;object-position:top center}
+.product-card .cover{aspect-ratio:640/905;background:#0d0d0f;display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:1px solid var(--border)}
+.product-card .cover img{width:100%;height:100%;object-fit:cover;object-position:center}
 .product-card .pc-body{padding:16px 17px 18px;display:flex;flex-direction:column;gap:7px;flex:1}
 .product-card .pc-tag{font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gold-dim)}
 .product-card h3{font-size:1.04rem;line-height:1.3;margin:0}
@@ -328,12 +328,12 @@ const STORE_CSS = `<style>
 .pd-back svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
 /* ── featured course banner ── */
 .store-feature{padding:30px 0 8px}
-.feat-card{display:grid;grid-template-columns:300px 1fr;gap:34px;align-items:center;text-decoration:none;color:var(--text);
+.feat-card{display:grid;grid-template-columns:300px 1fr;gap:34px;align-items:stretch;text-decoration:none;color:var(--text);
   background:linear-gradient(110deg,rgba(245,197,24,.07),var(--surface) 55%);border:1px solid var(--border-2);border-radius:22px;padding:26px;
   transition:transform .18s ease,border-color .2s,box-shadow .25s}
 .feat-card:hover{transform:translateY(-4px);border-color:rgba(245,197,24,.5);box-shadow:0 40px 80px -44px rgba(245,197,24,.18)}
 .feat-cover{border-radius:14px;overflow:hidden;border:1px solid var(--border);background:#0d0d0f}
-.feat-cover img{width:100%;display:block}
+.feat-cover img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
 .feat-eyebrow{font-size:.74rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--gold-dim);margin:0 0 8px}
 .feat-body h2{font-size:clamp(1.5rem,3vw,2.1rem);margin:0 0 8px;line-height:1.12}
 .feat-tag{color:var(--muted);font-size:1.05rem;margin:0 0 14px}
@@ -344,11 +344,11 @@ const STORE_CSS = `<style>
 .feat-foot{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
 .feat-foot .price{font-size:1.6rem;font-weight:800}
 .feat-go{color:var(--gold-dim);font-weight:800;font-size:.95rem}
-@media(max-width:760px){.feat-card{grid-template-columns:1fr;gap:20px}.feat-cover{max-width:220px}}
+@media(max-width:760px){.feat-card{grid-template-columns:1fr;gap:20px}.feat-cover{max-width:220px;margin:0 auto}.feat-cover img{height:auto}}
 /* ── free resources section (lighter) ── */
 .store-free-sec .product-grid.compact{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:18px}
 .store-free-sec .product-card{background:transparent}
-.store-free-sec .product-card .cover{aspect-ratio:1/1.1}
+.store-free-sec .product-card .cover{aspect-ratio:640/905}
 /* ── authority trust strip ── */
 .trust-row{display:flex;gap:14px;flex-wrap:wrap;margin:18px 0 4px}
 .trust-stat{flex:1;min-width:110px;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:14px 12px}
