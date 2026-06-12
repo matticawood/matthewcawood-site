@@ -37,7 +37,7 @@
 <section class="page-intro"><div class="wrap">
   <p class="eyebrow">Get in touch</p>
   <h1>Contact</h1>
-  <p>For any enquiries, use the form below, or reach me directly by email or on social.</p>
+  <p>For any enquiries, use the form below, or reach Matthew directly by email or on social.</p>
 </div></section>
 
 <section style="padding-top:24px">
@@ -51,7 +51,7 @@
     </form>
     <div class="contact-side">
       <div class="contact-card">
-        <h3 style="font-size:1.1rem;margin-bottom:12px">Other ways to reach me</h3>
+        <h3 style="font-size:1.1rem;margin-bottom:12px">Other ways to reach Matthew</h3>
         <p class="muted" style="margin:0 0 14px">Email <a href="mailto:enquiries@matthewcawood.com">enquiries@matthewcawood.com</a></p>
         <p class="muted" style="margin:0 0 14px">Instagram <a href="https://www.instagram.com/matticawood" target="_blank" rel="noopener">@matticawood</a></p>
         <p class="muted" style="margin:0">YouTube <a href="https://www.youtube.com/@matticawood" target="_blank" rel="noopener">@matticawood</a></p>
@@ -81,7 +81,7 @@
     btn.disabled=true; note.textContent='Sending…';
     try{
       var r=await fetch('/.netlify/functions/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,email:email,message:msg})});
-      if(r.ok){ note.textContent="Thanks, your message has been sent. I'll get back to you soon."; f.reset(); }
+      if(r.ok){ note.textContent="Thanks, your message has been sent. Matthew will get back to you soon."; f.reset(); }
       else{ note.textContent='Something went wrong. Please email enquiries@matthewcawood.com directly.'; }
     }catch(e){ note.textContent='Something went wrong. Please email enquiries@matthewcawood.com directly.'; }
     btn.disabled=false;

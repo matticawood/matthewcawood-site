@@ -382,7 +382,7 @@ function show(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.r
 // ── product selection ──
 function pickSingle(key){
   clinic = PRODUCTS[key]; mode = "single";
-  if (key==="l60" && !clinic.id){ alert("1-hour lessons aren't quite set up yet, please try a clinic, or contact me."); return; }
+  if (key==="l60" && !clinic.id){ alert("1-hour lessons aren't quite set up yet, please try a clinic, or contact Matthew."); return; }
   startBooking();
 }
 function startBooking(){
@@ -447,7 +447,7 @@ async function checkCredits(){
     const res=await fetch(`${FN}/lesson-credits?email=${encodeURIComponent(email)}`,{headers:AUTH});
     const data=await res.json();
     if((data.remaining||0)<=0){ err.textContent="No lessons found for that email. If you've just bought a package, give it a minute and try again."; err.style.display="block"; return; }
-    if(!EVENT_1HR){ err.textContent="Lesson booking isn't quite set up yet, please contact me to schedule."; err.style.display="block"; return; }
+    if(!EVENT_1HR){ err.textContent="Lesson booking isn't quite set up yet, please contact Matthew to schedule."; err.style.display="block"; return; }
     redeemEmail=email; mode="redeem"; clinic=PRODUCTS.l60; startBooking();
   }catch(e){ err.textContent="Something went wrong, please try again."; err.style.display="block"; }
   finally{ btn.disabled=false; btn.innerHTML="Check my lessons →"; }
