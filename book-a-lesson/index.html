@@ -160,7 +160,8 @@
   .file-label.has{border-style:solid;color:#fff}
   .narrow-form{max-width:580px;margin:0 auto}
   .result{text-align:center;padding:40px 22px}
-  .result .big{font-size:2.8rem;margin-bottom:14px}
+  .result .big{font-size:2.8rem;margin-bottom:16px;line-height:0}
+  .result .big svg{display:block;margin:0 auto}
   .result h2{font-size:1.9rem}
   .btn-ghost{background:transparent;color:#fff;border:1px solid var(--border-2)}
   .btn-ghost:hover{border-color:var(--accent);background:rgba(255,255,255,.04)}
@@ -308,7 +309,7 @@
   </div>
 
   <!-- RESULT -->
-  <div class="screen" id="screen-result"><div class="result panel"><div class="big" id="res-emoji">🎉</div><h2 id="res-title"></h2><p class="muted" id="res-msg" style="max-width:440px;margin:10px auto 0"></p><a class="btn btn-ghost" href="/book-a-lesson/" style="margin-top:22px">Done</a></div></div>
+  <div class="screen" id="screen-result"><div class="result panel"><div class="big" id="res-emoji"></div><h2 id="res-title"></h2><p class="muted" id="res-msg" style="max-width:440px;margin:10px auto 0"></p><a class="btn btn-ghost" href="/book-a-lesson/" style="margin-top:22px">Done</a></div></div>
 
 </div></section>
 
@@ -587,7 +588,7 @@ async function confirmBooking(){
       const res=await fetch(`${FN}/lesson-redeem`,{method:"POST",headers:AUTH,body:JSON.stringify({ email, eventTypeId:clinic.id, startTime:new Date(selSlot).toISOString(), name:fname, timeZone:userTZ, notes:notes||undefined, fileUrl:fileUrl||undefined })});
       const data=await res.json();
       if(!res.ok || data.error) throw new Error(data.error||"Booking failed");
-      result("🎹","You're booked in!",`Your 1-hour lesson is confirmed, check your email for the details. You have ${data.remaining} lesson${data.remaining===1?"":"s"} left in your package.`);
+      result(IC_DONE,"You're booked in!",`Your 1-hour lesson is confirmed, check your email for the details. You have ${data.remaining} lesson${data.remaining===1?"":"s"} left in your package.`);
     } else {
       const res=await fetch(`${FN}/clinic-checkout`,{method:"POST",headers:AUTH,body:JSON.stringify({ eventTypeId:clinic.id, startTime:new Date(selSlot).toISOString(), duration:clinic.duration, name:fname, email, timeZone:userTZ, currency:CURRENCY, notes:notes||undefined, fileUrl:fileUrl||undefined, pageUrl:location.href.split("?")[0] })});
       const data=await res.json();
@@ -595,15 +596,17 @@ async function confirmBooking(){
     }
   }catch(e){ showErr(e.message); btn.disabled=false; btn.innerHTML = mode==="redeem" ? "Book my lesson →" : "Confirm booking →"; }
 }
-function result(emoji,title,msg){ document.getElementById("res-emoji").textContent=emoji; document.getElementById("res-title").textContent=title; document.getElementById("res-msg").textContent=msg; show("screen-result"); }
+const IC_DONE='<svg width="58" height="58" viewBox="0 0 24 24" fill="none" stroke="#f5c518" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.4 12.4l2.5 2.5 4.7-5.7"/></svg>';
+const IC_UNDO='<svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#9a9aa2" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5v5h5"/><path d="M3.6 13.5a9 9 0 1 0 2.1-9.4L3 8.5"/></svg>';
+function result(icon,title,msg){ document.getElementById("res-emoji").innerHTML=icon; document.getElementById("res-title").textContent=title; document.getElementById("res-msg").textContent=msg; show("screen-result"); }
 
 // ── boot: handle Stripe return + render packages ──
 (function(){
   renderPackages();
   loadPrices();
   const q=new URLSearchParams(location.search);
-  if(q.get("success")) result("🎉","Payment received!","Thanks, your booking is confirmed and you'll get an email with the details shortly. If you bought a package, the email explains how to book each lesson.");
-  else if(q.get("cancelled")) result("↩️","Checkout cancelled","No payment was taken. You can pick another time whenever you're ready.");
+  if(q.get("success")) result(IC_DONE,"Payment received!","Thanks, your booking is confirmed and you'll get an email with the details shortly. If you bought a package, the email explains how to book each lesson.");
+  else if(q.get("cancelled")) result(IC_UNDO,"Checkout cancelled","No payment was taken. You can pick another time whenever you're ready.");
 })();
 </script>
 </body></html>
