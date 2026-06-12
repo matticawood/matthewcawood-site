@@ -12,7 +12,8 @@
   .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:42px;align-items:start;max-width:980px;margin:0 auto}
   @media(max-width:760px){.contact-grid{grid-template-columns:1fr;gap:30px}}
   .field label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:14px 0 5px}
-  .field input,.field textarea{width:100%;border:1.5px solid var(--border);background:#fff;border-radius:10px;padding:13px 15px;font-size:1rem;font-family:inherit;color:var(--text)}
+  .field input,.field textarea{width:100%;border:1.5px solid var(--border-2);background:var(--surface);border-radius:12px;padding:13px 15px;font-size:1rem;font-family:inherit;color:var(--text)}
+  .field input::placeholder,.field textarea::placeholder{color:var(--muted-2)}
   .field input:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
   .field textarea{min-height:150px;resize:vertical;line-height:1.6}
   .contact-side a{color:var(--gold-dim);font-weight:600}
