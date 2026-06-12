@@ -69,7 +69,7 @@ function shell({title, desc, body, active, extraHead=""}){
 <meta name="description" content="${esc(desc)}">
 <meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:type" content="article">
 <link rel="icon" href="/assets/img/icon.webp">
-<link rel="stylesheet" href="/assets/css/site.css">${extraHead}
+<link rel="stylesheet" href="/assets/css/site.css?v=2">${extraHead}
 </head><body>
 ${header(active)}
 ${body}
