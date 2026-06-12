@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Manage your booking · Matthew Cawood</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a0b;--surface:#141416;--surface2:#1b1b1f;--border:#26262b;--text:#f2f1ef;--mut:#a1a1aa;--accent:#f5c518}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .card{max-width:460px;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:40px 34px;text-align:center}
+  img.logo{width:56px;height:56px;border-radius:15px}
+  h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:1.55rem;margin:20px 0 10px;letter-spacing:-.01em}
+  p{color:var(--mut);line-height:1.6;font-size:1rem;margin:0 0 14px}
+  .detail{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:15px 18px;color:#e9e8e5;font-size:.95rem;margin:20px 0}
+  .detail b{color:#fff}
+  .warn{color:#e0a93f;font-size:.92rem}
+  .btn{display:inline-block;box-sizing:border-box;width:280px;max-width:100%;margin:7px auto;padding:14px 18px;border-radius:12px;font-weight:700;font-size:1rem;text-decoration:none;cursor:pointer;border:0;font-family:inherit}
+  .btn-gold{background:var(--accent);color:#1a1410}
+  .btn-ghost{background:transparent;color:var(--text);border:1.5px solid #3a3a40}
+  .btn-danger{background:#e1543f;color:#fff}
+  .btn[disabled]{opacity:.55;cursor:default}
+  .muted{color:#7d7d85;font-size:.84rem;margin-top:16px}
+  .spin{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:r .8s linear infinite;margin:14px auto}
+  @keyframes r{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <img class="logo" src="https://gyskfutmncprqxazgatv.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="Matthew Cawood">
+  <div id="content"><div class="spin"></div><p>Loading your booking…</p></div>
+</div>
+
+<script>
+const API = "https://gyskfutmncprqxazgatv.supabase.co/functions/v1/booking-manage";
+const BOOK_URL = "/book-a-lesson/";
+const qs = new URLSearchParams(location.search);
+const uid = qs.get("uid") || "";
+let action = (qs.get("a") || "").toLowerCase();
+const el = document.getElementById("content");
+
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const detailHtml = (i) => `<div class="detail"><b>${esc(i.label)}</b><br>${esc(i.dateStr)} at ${esc(i.timeStr)}</div>`;
+
+function bookCta(text){ return `<a class="btn btn-gold" href="${BOOK_URL}">${text}</a>`; }
+
+function render(html){ el.innerHTML = html; }
+
+async function load(){
+  if(!uid){ return render(`<h1>Link incomplete</h1><p>Please use the link from your confirmation email.</p>${bookCta("Book a lesson")}`); }
+  let i;
+  try{
+    const r = await fetch(`${API}?uid=${encodeURIComponent(uid)}`, {cache:"no-store"});
+    i = await r.json();
+  }catch(e){ return render(`<h1>Something went wrong</h1><p>Please try again, or email <a href="mailto:matthew@matthewcawood.com" style="color:var(--accent)">matthew@matthewcawood.com</a>.</p>`); }
+
+  if(!i || !i.found){ return render(`<h1>Booking not found</h1><p>We couldn't find this booking — it may already have been cancelled. You can book a new time below.</p>${bookCta("Book a lesson")}`); }
+  if(i.cancelled){ return render(`<h1>Already cancelled</h1><p>This booking has already been cancelled.</p>${detailHtml(i)}${bookCta("Book a new time")}`); }
+
+  if(action === "reschedule"){
+    if(!i.withinCutoff){
+      render(`<h1>Taking you to reschedule…</h1>${detailHtml(i)}<p>Redirecting you to pick a new time.</p>`);
+      location.href = i.rescheduleUrl;
+      return;
+    }
+    return render(`<h1>Reschedules are closed</h1><p>Reschedules are free up to <strong>24 hours</strong> before your booking. Yours is now less than 24 hours away, so it can't be moved — but you can cancel it if you need to.</p>${detailHtml(i)}<button class="btn btn-ghost" onclick="action='cancel';showCancel(window.__i)">Cancel instead</button><p class="muted">Keeping your booking? Just close this page.</p>`);
+  }
+
+  if(action === "cancel"){ window.__i = i; return showCancel(i); }
+
+  // default: offer both
+  window.__i = i;
+  return render(`<h1>Manage your booking</h1>${detailHtml(i)}
+    <button class="btn btn-ghost" onclick="reschedule(window.__i)">Reschedule</button>
+    <button class="btn btn-danger" onclick="showCancel(window.__i)">Cancel</button>`);
+}
+
+function reschedule(i){
+  if(!i.withinCutoff){ location.href = i.rescheduleUrl; }
+  else { action='cancel'; render(`<h1>Reschedules are closed</h1><p>Yours is less than 24 hours away, so it can't be moved — but you can cancel.</p>${detailHtml(i)}<button class="btn btn-danger" onclick="showCancel(window.__i)">Cancel instead</button>`); }
+}
+
+function showCancel(i){
+  const creditWarn = i.isPackage
+    ? `<p class="warn"><strong>Heads up:</strong> cancelling does not return your lesson credit. If you only need a different time and you're more than 24 hours away, reschedule instead.</p>` : "";
+  const reschedOpt = !i.withinCutoff ? `<button class="btn btn-ghost" onclick="reschedule(window.__i)">Reschedule instead</button>` : "";
+  render(`<h1>Cancel this booking?</h1><p>You're about to cancel your ${esc(i.label)} with Matthew.</p>${detailHtml(i)}${creditWarn}
+    <button class="btn btn-danger" id="confirmBtn" onclick="doCancel()">Yes, cancel my booking</button>
+    ${reschedOpt}
+    <p class="muted">Changed your mind? Just close this page to keep your booking.</p>`);
+}
+
+async function doCancel(){
+  const btn = document.getElementById("confirmBtn");
+  if(btn){ btn.disabled = true; btn.textContent = "Cancelling…"; }
+  try{
+    const r = await fetch(API, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({uid, action:"cancel"})});
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.error||"failed");
+    const i = window.__i;
+    const note = i && i.isPackage ? `<p class="muted">As cancelled (rather than rescheduled), your lesson credit has not been returned.</p>` : "";
+    render(`<h1>Your booking is cancelled</h1><p>That's done — the slot has been freed up.</p>${bookCta("Book a new time")}${note}`);
+  }catch(e){
+    render(`<h1>Couldn't cancel</h1><p>Something went wrong. Please email <a href="mailto:matthew@matthewcawood.com" style="color:var(--accent)">matthew@matthewcawood.com</a> and we'll sort it.</p>`);
+  }
+}
+load();
+</script>
+</body>
+</html>
