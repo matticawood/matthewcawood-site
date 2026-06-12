@@ -225,6 +225,34 @@ footer.site .legal{grid-column:1/-1;border-top:1px solid var(--border);margin-to
 .back-link{display:inline-flex;gap:7px;align-items:center;color:var(--muted);font-weight:600;font-size:.92rem;margin-bottom:6px}
 .back-link:hover{color:var(--gold-dim)}
 
+/* ── Light reading mode: individual articles only (dark chrome kept) ──
+   Scoped via :has() — the archive has no .article-head, so it stays dark.
+   Warm cream sheet + near-black serif, matching the email/brand warmth. */
+body:has(.article-head){background:#faf7f3;color:#2a2520}
+body:has(.article-head)::before{display:none}                       /* no dark glow on light pages */
+body:has(.article-head) header.site{background:rgba(12,12,14,.92)}  /* keep a crisp dark nav bar */
+body:has(.article-head) .article-head .date{color:#b07d0a}
+body:has(.article-head) .article-head h1{color:#1f1a14}
+body:has(.article-head) .article{color:#2a2520}
+body:has(.article-head) .article h2,
+body:has(.article-head) .article h3,
+body:has(.article-head) .article h4{color:#1f1a14}
+body:has(.article-head) .article p{color:#2a2520}
+body:has(.article-head) .article a{color:#9a6f12;text-decoration-color:rgba(154,111,18,.42)}
+body:has(.article-head) .article a:hover{text-decoration-color:#9a6f12}
+body:has(.article-head) .article strong{color:#1a1410}
+body:has(.article-head) .article li::marker{color:#b07d0a}
+body:has(.article-head) .article img,
+body:has(.article-head) .article-cover img{border-color:#e6ddd0}
+body:has(.article-head) .article blockquote{background:#f1ece3;color:#42382e;border-left-color:var(--accent)}
+body:has(.article-head) .article hr{border-top-color:#e0d6c8}
+body:has(.article-head) .article-nav{border-top-color:#e6ddd0}
+body:has(.article-head) .article-nav a{color:#8a7d6e}
+body:has(.article-head) .article-nav a b{color:#1f1a14}
+body:has(.article-head) .article-nav a:hover b{color:#9a6f12}
+body:has(.article-head) .back-link{color:#8a7d6e}
+body:has(.article-head) .back-link:hover{color:#9a6f12}
+
 /* ── scroll reveal (cards fade up as they enter view) ── */
 .reveal{opacity:0;transform:translateY(16px);transition:opacity .55s cubic-bezier(.16,1,.3,1),transform .55s cubic-bezier(.16,1,.3,1)}
 .reveal.visible{opacity:1;transform:none}
