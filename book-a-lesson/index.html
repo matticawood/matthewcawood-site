@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Book a Lesson — Matthew Cawood</title>
-<meta name="description" content="Book a 1:1 online piano lesson or clinic with Matthew Cawood — 20/30-min clinics, 1-hour lessons, and discounted lesson packages.">
-<meta property="og:title" content="Book a Lesson — Matthew Cawood">
+<title>Book a Lesson, Matthew Cawood</title>
+<meta name="description" content="Book a 1:1 online piano lesson or clinic with Matthew Cawood, 20/30-min clinics, 1-hour lessons, and discounted lesson packages.">
+<meta property="og:title" content="Book a Lesson, Matthew Cawood">
 <link rel="icon" href="/assets/img/icon.webp">
 <link rel="stylesheet" href="/assets/css/site.css">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -179,7 +179,7 @@
 
 <section class="page-intro"><div class="wrap">
   <p class="eyebrow">1:1 with Matthew</p><h1>Book a Lesson</h1>
-  <p>Online clinics, full lessons and discounted packages — pick what suits, choose a time, and you're booked.</p>
+  <p>Online clinics, full lessons and discounted packages, pick what suits, choose a time, and you're booked.</p>
   <div class="assure">
     <span><svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/></svg>Online via Zoom</span>
     <span><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M9 3v4M15 3v4"/></svg>Pick any free slot</span>
@@ -214,7 +214,7 @@
         <span class="tag">Most popular</span>
         <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2.5"/></svg></div>
         <div class="st">1-hour lesson</div>
-        <div class="sd">A full, tailored lesson — proper time to make real progress.</div>
+        <div class="sd">A full, tailored lesson, proper time to make real progress.</div>
         <div class="srow"><div class="sp" id="price-l60">£49</div><div class="go">Choose →</div></div>
       </button>
     </div>
@@ -332,7 +332,7 @@ const PACKAGES = [
 let CURRENCY="GBP", SYM="£", LP=null;
 function money(v){ v=Number(v); return SYM + (Number.isInteger(v)? v : v.toFixed(2)); }
 const SUPPORTED_CCY=["GBP","USD","EUR","CAD","AUD","NZD","SEK","NOK","DKK","SGD"];
-// Detect the buyer's currency in the BROWSER (their real IP) — more reliable than
+// Detect the buyer's currency in the BROWSER (their real IP), more reliable than
 // the server header. Falls back gracefully if the lookup is blocked/unavailable.
 async function detectCcy(){
   try{
@@ -382,7 +382,7 @@ function show(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.r
 // ── product selection ──
 function pickSingle(key){
   clinic = PRODUCTS[key]; mode = "single";
-  if (key==="l60" && !clinic.id){ alert("1-hour lessons aren't quite set up yet — please try a clinic, or contact me."); return; }
+  if (key==="l60" && !clinic.id){ alert("1-hour lessons aren't quite set up yet, please try a clinic, or contact me."); return; }
   startBooking();
 }
 function startBooking(){
@@ -447,9 +447,9 @@ async function checkCredits(){
     const res=await fetch(`${FN}/lesson-credits?email=${encodeURIComponent(email)}`,{headers:AUTH});
     const data=await res.json();
     if((data.remaining||0)<=0){ err.textContent="No lessons found for that email. If you've just bought a package, give it a minute and try again."; err.style.display="block"; return; }
-    if(!EVENT_1HR){ err.textContent="Lesson booking isn't quite set up yet — please contact me to schedule."; err.style.display="block"; return; }
+    if(!EVENT_1HR){ err.textContent="Lesson booking isn't quite set up yet, please contact me to schedule."; err.style.display="block"; return; }
     redeemEmail=email; mode="redeem"; clinic=PRODUCTS.l60; startBooking();
-  }catch(e){ err.textContent="Something went wrong — please try again."; err.style.display="block"; }
+  }catch(e){ err.textContent="Something went wrong, please try again."; err.style.display="block"; }
   finally{ btn.disabled=false; btn.innerHTML="Check my lessons →"; }
 }
 
@@ -553,7 +553,7 @@ async function confirmBooking(){
       const res=await fetch(`${FN}/lesson-redeem`,{method:"POST",headers:AUTH,body:JSON.stringify({ email, eventTypeId:clinic.id, startTime:new Date(selSlot).toISOString(), name:fname, timeZone:userTZ, notes:notes||undefined, fileUrl:fileUrl||undefined })});
       const data=await res.json();
       if(!res.ok || data.error) throw new Error(data.error||"Booking failed");
-      result("🎹","You're booked in!",`Your 1-hour lesson is confirmed — check your email for the details. You have ${data.remaining} lesson${data.remaining===1?"":"s"} left in your package.`);
+      result("🎹","You're booked in!",`Your 1-hour lesson is confirmed, check your email for the details. You have ${data.remaining} lesson${data.remaining===1?"":"s"} left in your package.`);
     } else {
       const res=await fetch(`${FN}/clinic-checkout`,{method:"POST",headers:AUTH,body:JSON.stringify({ eventTypeId:clinic.id, startTime:new Date(selSlot).toISOString(), duration:clinic.duration, name:fname, email, timeZone:userTZ, currency:CURRENCY, notes:notes||undefined, fileUrl:fileUrl||undefined, pageUrl:location.href.split("?")[0] })});
       const data=await res.json();
@@ -568,7 +568,7 @@ function result(emoji,title,msg){ document.getElementById("res-emoji").textConte
   renderPackages();
   loadPrices();
   const q=new URLSearchParams(location.search);
-  if(q.get("success")) result("🎉","Payment received!","Thanks — your booking is confirmed and you'll get an email with the details shortly. If you bought a package, the email explains how to book each lesson.");
+  if(q.get("success")) result("🎉","Payment received!","Thanks, your booking is confirmed and you'll get an email with the details shortly. If you bought a package, the email explains how to book each lesson.");
   else if(q.get("cancelled")) result("↩️","Checkout cancelled","No payment was taken. You can pick another time whenever you're ready.");
 })();
 </script>

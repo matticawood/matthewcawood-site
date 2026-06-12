@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Contact — Matthew Cawood</title>
-<meta name="description" content="Get in touch with Matthew Cawood — enquiries, collaborations and questions.">
-<meta property="og:title" content="Contact — Matthew Cawood">
+<title>Contact, Matthew Cawood</title>
+<meta name="description" content="Get in touch with Matthew Cawood, enquiries, collaborations and questions.">
+<meta property="og:title" content="Contact, Matthew Cawood">
 <link rel="icon" href="/assets/img/icon.webp">
 <link rel="stylesheet" href="/assets/css/site.css">
 <style>
@@ -37,7 +37,7 @@
 <section class="page-intro"><div class="wrap">
   <p class="eyebrow">Get in touch</p>
   <h1>Contact</h1>
-  <p>For any enquiries, use the form below — or reach me directly by email or on social.</p>
+  <p>For any enquiries, use the form below, or reach me directly by email or on social.</p>
 </div></section>
 
 <section style="padding-top:24px">
@@ -81,7 +81,7 @@
     btn.disabled=true; note.textContent='Sending…';
     try{
       var r=await fetch('/.netlify/functions/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,email:email,message:msg})});
-      if(r.ok){ note.textContent="Thanks — your message has been sent. I'll get back to you soon."; f.reset(); }
+      if(r.ok){ note.textContent="Thanks, your message has been sent. I'll get back to you soon."; f.reset(); }
       else{ note.textContent='Something went wrong. Please email enquiries@matthewcawood.com directly.'; }
     }catch(e){ note.textContent='Something went wrong. Please email enquiries@matthewcawood.com directly.'; }
     btn.disabled=false;

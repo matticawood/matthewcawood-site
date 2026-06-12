@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Matthew Cawood — Pianist, Producer &amp; Educator</title>
-<meta name="description" content="Pianist, producer and educator Matthew Cawood. Weekly Monday Music Tips, 1:1 lessons, and The Practice Room — the piano platform built for how you actually learn.">
-<meta property="og:title" content="Matthew Cawood — Pianist, Producer & Educator">
+<title>Matthew Cawood, Pianist, Producer &amp; Educator</title>
+<meta name="description" content="Pianist, producer and educator Matthew Cawood. Weekly Monday Music Tips, 1:1 lessons, and The Practice Room, the piano platform built for how you actually learn.">
+<meta property="og:title" content="Matthew Cawood, Pianist, Producer & Educator">
 <meta property="og:description" content="Weekly Monday Music Tips, 1:1 lessons, and The Practice Room.">
 <meta property="og:type" content="website">
 <link rel="icon" href="/assets/img/icon.webp">
@@ -42,7 +42,7 @@
     <div>
       <p class="eyebrow">Pianist · Producer · Educator</p>
       <h1>Helping you understand the music<br>you actually want to play.</h1>
-      <p class="lede">I'm Matthew Cawood — a pianist and educator making music theory and technique genuinely understandable, without dumbing it down. Weekly tips, in-depth lessons, and a platform built for real practice.</p>
+      <p class="lede">I'm Matthew Cawood, a pianist and educator making music theory and technique genuinely understandable, without dumbing it down. Weekly tips, in-depth lessons, and a platform built for real practice.</p>
       <div class="hero-cta">
         <a class="btn" href="/monday-music-tips/">Read Monday Music Tips</a>
         <a class="btn btn-ghost" href="/book-a-lesson/">Book a Lesson</a>
@@ -61,7 +61,7 @@
     <div>
       <p class="eyebrow">Who is Matt?</p>
       <h2>From viola at seven to teaching thousands online.</h2>
-      <p>Matt discovered the piano at 11 and never looked back — achieving Grade 8 ABRSM by 16 and his ATCL Performance Diploma with distinction. An exceptional ear paired with a hard-won mastery of theory shapes how he teaches today: clear, practical, and rooted in <em>why</em> the music works.</p>
+      <p>Matt discovered the piano at 11 and never looked back, achieving Grade 8 ABRSM by 16 and his ATCL Performance Diploma with distinction. An exceptional ear paired with a hard-won mastery of theory shapes how he teaches today: clear, practical, and rooted in <em>why</em> the music works.</p>
       <p>With 143K YouTube subscribers and millions of views, he's built a reputation for making the hard things make sense.</p>
       <a class="btn btn-ghost" href="/about/">More about Matt →</a>
     </div>
@@ -79,19 +79,19 @@
       <div class="card">
         <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M7 5v14"/></svg></div>
         <h3>Monday Music Tips</h3>
-        <p>A free weekly email unpacking one idea about practice, theory or musicality — clearly and concisely. 115+ issues and counting.</p>
+        <p>A free weekly email unpacking one idea about practice, theory or musicality, clearly and concisely. 115+ issues and counting.</p>
         <a class="btn btn-ghost" style="margin-top:16px" href="/monday-music-tips/">Browse the archive →</a>
       </div>
       <div class="card">
         <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5M5 8v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/></svg></div>
         <h3>The Practice Room</h3>
-        <p>My piano platform: structured practice tracking, a pieces library, theory guides, tools and a community — built for how you actually learn.</p>
+        <p>My piano platform: structured practice tracking, a pieces library, theory guides, tools and a community, built for how you actually learn.</p>
         <a class="btn btn-ghost" style="margin-top:16px" href="https://app.matthewcawood.com/signup">Explore the app →</a>
       </div>
       <div class="card">
         <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div>
         <h3>1:1 Lessons</h3>
-        <p>Personal online lessons tailored to your goals — whether you're starting out, returning, or pushing into advanced repertoire and theory.</p>
+        <p>Personal online lessons tailored to your goals, whether you're starting out, returning, or pushing into advanced repertoire and theory.</p>
         <a class="btn btn-ghost" style="margin-top:16px" href="/book-a-lesson/">Book a lesson →</a>
       </div>
     </div>
@@ -103,7 +103,7 @@
   <div class="wrap news-inner">
     <p class="eyebrow">Free weekly email</p>
     <h2>Join Monday Music Tips</h2>
-    <p>One short, useful idea about playing and understanding music — every Monday. Loved by thousands of pianists.</p>
+    <p>One short, useful idea about playing and understanding music, every Monday. Loved by thousands of pianists.</p>
     <form class="subscribe" id="subscribe-form" onsubmit="return false">
       <input type="email" id="sub-email" placeholder="you@email.com" autocomplete="email" required>
       <button class="btn" type="submit" id="sub-btn">Subscribe</button>
@@ -164,8 +164,8 @@
     try{
       var r=await fetch('/.netlify/functions/newsletter',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,source:'home'})});
       if(r.ok){note.textContent='You\'re in! Check your inbox to confirm.';f.reset();}
-      else{note.textContent='Something went wrong — please try again.';}
-    }catch(e){note.textContent='Something went wrong — please try again.';}
+      else{note.textContent='Something went wrong, please try again.';}
+    }catch(e){note.textContent='Something went wrong, please try again.';}
     btn.disabled=false;
   });
 })();

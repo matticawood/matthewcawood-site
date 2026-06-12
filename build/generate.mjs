@@ -1,6 +1,6 @@
 // Brand-site generator: pulls PUBLISHED Monday Music Tips from Supabase and emits
-// static pages — /monday-music-tips/ (archive) + /monday-music-tips/<slug>/ (each
-// article) — in the cream/gold theme. Runs locally and as the Netlify build step;
+// static pages, /monday-music-tips/ (archive) + /monday-music-tips/<slug>/ (each
+// article), in the cream/gold theme. Runs locally and as the Netlify build step;
 // re-running regenerates everything from the DB (the source of truth).
 import { writeFile, mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
@@ -15,7 +15,7 @@ const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov
 const fmtDate = iso => { const d = new Date(iso); return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`; };
 const year = iso => new Date(iso).getUTCFullYear();
 
-// Deterministic dark card colour — distinct per tip, cohesive across the archive.
+// Deterministic dark card colour, distinct per tip, cohesive across the archive.
 const CARD_BG = [
   ["#4a3f31","#2a241d","#161310"], // espresso
   ["#3a4250","#232a33","#11151b"], // charcoal blue
@@ -55,11 +55,11 @@ function footer(){
 }
 const newsletterCTA = `<section class="news"><div class="wrap news-inner">
   <p class="eyebrow">Free weekly email</p><h2>Get the next tip in your inbox</h2>
-  <p>One short, useful idea about playing and understanding music — every Monday.</p>
+  <p>One short, useful idea about playing and understanding music, every Monday.</p>
   <form class="subscribe" id="subscribe-form" onsubmit="return false"><input type="email" id="sub-email" placeholder="you@email.com" autocomplete="email" required><button class="btn" type="submit" id="sub-btn">Subscribe</button></form>
   <div class="form-note" id="sub-note"></div>
 </div></section>`;
-const subscribeJS = `<script>(function(){var f=document.getElementById('subscribe-form');if(!f)return;var n=document.getElementById('sub-note'),b=document.getElementById('sub-btn');f.addEventListener('submit',async function(){var e=document.getElementById('sub-email').value.trim();if(!/.+@.+\\..+/.test(e)){n.textContent='Please enter a valid email.';return;}b.disabled=true;n.textContent='Subscribing…';try{var r=await fetch('/.netlify/functions/newsletter',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e,source:'mmt'})});n.textContent=r.ok?"You're in! Check your inbox.":'Something went wrong — try again.';if(r.ok)f.reset();}catch(_){n.textContent='Something went wrong — try again.';}b.disabled=false;});})();</script>`;
+const subscribeJS = `<script>(function(){var f=document.getElementById('subscribe-form');if(!f)return;var n=document.getElementById('sub-note'),b=document.getElementById('sub-btn');f.addEventListener('submit',async function(){var e=document.getElementById('sub-email').value.trim();if(!/.+@.+\\..+/.test(e)){n.textContent='Please enter a valid email.';return;}b.disabled=true;n.textContent='Subscribing…';try{var r=await fetch('/.netlify/functions/newsletter',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e,source:'mmt'})});n.textContent=r.ok?"You're in! Check your inbox.":'Something went wrong, try again.';if(r.ok)f.reset();}catch(_){n.textContent='Something went wrong, try again.';}b.disabled=false;});})();</script>`;
 const navToggleJS = ``; // toggle is inline onclick
 
 function shell({title, desc, body, active, extraHead=""}){
@@ -92,7 +92,7 @@ function articlePage(a, newer, older){
   </div>
 </article>
 ${newsletterCTA}`;
-  return shell({ title:`${a.title} — Monday Music Tips`, desc:a.seo_description||a.excerpt||a.title, body, active:"/monday-music-tips/" });
+  return shell({ title:`${a.title}, Monday Music Tips`, desc:a.seo_description||a.excerpt||a.title, body, active:"/monday-music-tips/" });
 }
 
 function archivePage(articles){
@@ -107,7 +107,7 @@ function archivePage(articles){
   </div></div>`).join("");
   const body = `<section class="page-intro"><div class="wrap">
     <p class="eyebrow">Free weekly email</p><h1>Monday Music Tips</h1>
-    <p>One short, useful idea about practice, theory or musicality — every Monday. ${articles.length} issues and counting.</p>
+    <p>One short, useful idea about practice, theory or musicality, every Monday. ${articles.length} issues and counting.</p>
   </div></section>
   <section class="archive"><div class="wrap">
     <div class="archive-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
@@ -131,7 +131,7 @@ function archivePage(articles){
       groups.forEach(function(g){var vis=g.querySelectorAll('.tip:not([style*="none"])').length;g.style.display=vis?'':'none';});
       nr.style.display=any?'none':'block';});
   })();</script>`;
-  return shell({ title:"Monday Music Tips — Matthew Cawood", desc:`Free weekly piano & music tips from Matthew Cawood. ${articles.length} issues on practice, theory and musicality.`, body, active:"/monday-music-tips/" });
+  return shell({ title:"Monday Music Tips, Matthew Cawood", desc:`Free weekly piano & music tips from Matthew Cawood. ${articles.length} issues on practice, theory and musicality.`, body, active:"/monday-music-tips/" });
 }
 
 // ── run ──
