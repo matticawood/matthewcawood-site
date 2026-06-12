@@ -12,25 +12,39 @@
   :root{--bg:#0a0a0b;--surface:#141416;--surface2:#1b1b1f;--border:#26262b;--text:#f2f1ef;--mut:#a1a1aa;--accent:#f5c518}
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-  .card{max-width:460px;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:40px 34px;text-align:center}
+  .card{max-width:480px;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:36px 30px;text-align:center}
   img.logo{width:56px;height:56px;border-radius:15px}
-  h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:1.55rem;margin:20px 0 10px;letter-spacing:-.01em}
-  p{color:var(--mut);line-height:1.6;font-size:1rem;margin:0 0 14px}
-  .detail{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:15px 18px;color:#e9e8e5;font-size:.95rem;margin:20px 0}
+  h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:1.5rem;margin:18px 0 10px;letter-spacing:-.01em}
+  p{color:var(--mut);line-height:1.6;font-size:.98rem;margin:0 0 14px}
+  .detail{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px 17px;color:#e9e8e5;font-size:.94rem;margin:18px 0}
   .detail b{color:#fff}
-  .warn{color:#e0a93f;font-size:.92rem}
-  .btn{display:inline-block;box-sizing:border-box;width:280px;max-width:100%;margin:7px auto;padding:14px 18px;border-radius:12px;font-weight:700;font-size:1rem;text-decoration:none;cursor:pointer;border:0;font-family:inherit}
+  .warn{color:#e0a93f;font-size:.9rem}
+  .btn{display:inline-block;box-sizing:border-box;width:290px;max-width:100%;margin:7px auto;padding:14px 18px;border-radius:12px;font-weight:700;font-size:1rem;text-decoration:none;cursor:pointer;border:0;font-family:inherit}
   .btn-gold{background:var(--accent);color:#1a1410}
   .btn-ghost{background:transparent;color:var(--text);border:1.5px solid #3a3a40}
   .btn-danger{background:#e1543f;color:#fff}
   .btn[disabled]{opacity:.55;cursor:default}
-  .muted{color:#7d7d85;font-size:.84rem;margin-top:16px}
+  .muted{color:#7d7d85;font-size:.83rem;margin-top:16px}
   .spin{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:r .8s linear infinite;margin:14px auto}
   @keyframes r{to{transform:rotate(360deg)}}
+  /* calendar */
+  .cal-head{display:flex;align-items:center;justify-content:space-between;margin:6px 0 10px}
+  .cal-mon{font-weight:700;font-size:1rem}
+  .cal-nav{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:9px;width:36px;height:36px;cursor:pointer;font-size:1.1rem;line-height:1}
+  .cal-nav[disabled]{opacity:.3;cursor:default}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+  .cal-dow{font-size:.66rem;color:var(--mut);text-align:center;padding:3px 0;text-transform:uppercase;letter-spacing:.04em}
+  .cal-day{aspect-ratio:1;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--text);font-size:.86rem;cursor:default;display:flex;align-items:center;justify-content:center;opacity:.3}
+  .cal-day.avail{background:var(--surface2);border-color:#4a4530;opacity:1;cursor:pointer}
+  .cal-day.sel{background:var(--accent);color:#1a1410;border-color:var(--accent);font-weight:700;opacity:1}
+  .times{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:14px}
+  .time{padding:10px 6px;border:1px solid var(--border);border-radius:9px;background:var(--surface2);color:var(--text);cursor:pointer;font-size:.9rem}
+  .time.sel{background:var(--accent);color:#1a1410;border-color:var(--accent);font-weight:700}
+  .lbl{font-weight:700;color:#fff;margin:16px 0 4px;font-size:.95rem}
 </style>
 </head>
 <body>
-<div class="card" id="card">
+<div class="card">
   <img class="logo" src="https://gyskfutmncprqxazgatv.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="Matthew Cawood">
   <div id="content"><div class="spin"></div><p>Loading your booking…</p></div>
 </div>
@@ -42,72 +56,165 @@ const qs = new URLSearchParams(location.search);
 const uid = qs.get("uid") || "";
 let action = (qs.get("a") || "").toLowerCase();
 const el = document.getElementById("content");
+const TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/London";
+
+let INFO = null;
+let calYear, calMonth, selDate = null, selSlot = null, monthAvail = null;
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad = (n) => String(n).padStart(2, "0");
+const render = (h) => el.innerHTML = h;
 const detailHtml = (i) => `<div class="detail"><b>${esc(i.label)}</b><br>${esc(i.dateStr)} at ${esc(i.timeStr)}</div>`;
-
-function bookCta(text){ return `<a class="btn btn-gold" href="${BOOK_URL}">${text}</a>`; }
-
-function render(html){ el.innerHTML = html; }
+const bookCta = (t) => `<a class="btn btn-gold" href="${BOOK_URL}">${t}</a>`;
 
 async function load(){
-  if(!uid){ return render(`<h1>Link incomplete</h1><p>Please use the link from your confirmation email.</p>${bookCta("Book a lesson")}`); }
-  let i;
+  if(!uid) return render(`<h1>Link incomplete</h1><p>Please use the link from your confirmation email.</p>${bookCta("Book a lesson")}`);
   try{
     const r = await fetch(`${API}?uid=${encodeURIComponent(uid)}`, {cache:"no-store"});
-    i = await r.json();
+    INFO = await r.json();
   }catch(e){ return render(`<h1>Something went wrong</h1><p>Please try again, or email <a href="mailto:matthew@matthewcawood.com" style="color:var(--accent)">matthew@matthewcawood.com</a>.</p>`); }
 
-  if(!i || !i.found){ return render(`<h1>Booking not found</h1><p>We couldn't find this booking — it may already have been cancelled. You can book a new time below.</p>${bookCta("Book a lesson")}`); }
-  if(i.cancelled){ return render(`<h1>Already cancelled</h1><p>This booking has already been cancelled.</p>${detailHtml(i)}${bookCta("Book a new time")}`); }
+  const i = INFO;
+  if(!i || !i.found) return render(`<h1>Booking not found</h1><p>We couldn't find this booking — it may already have been cancelled. You can book a new time below.</p>${bookCta("Book a lesson")}`);
+  if(i.cancelled) return render(`<h1>Already cancelled</h1><p>This booking has already been cancelled.</p>${detailHtml(i)}${bookCta("Book a new time")}`);
 
-  if(action === "reschedule"){
-    if(!i.withinCutoff){
-      render(`<h1>Taking you to reschedule…</h1>${detailHtml(i)}<p>Redirecting you to pick a new time.</p>`);
-      location.href = i.rescheduleUrl;
-      return;
-    }
-    return render(`<h1>Reschedules are closed</h1><p>Reschedules are free up to <strong>24 hours</strong> before your booking. Yours is now less than 24 hours away, so it can't be moved — but you can cancel it if you need to.</p>${detailHtml(i)}<button class="btn btn-ghost" onclick="action='cancel';showCancel(window.__i)">Cancel instead</button><p class="muted">Keeping your booking? Just close this page.</p>`);
+  if(action === "reschedule") return startReschedule();
+  if(action === "cancel") return showCancel();
+  // default
+  render(`<h1>Manage your booking</h1>${detailHtml(i)}
+    <button class="btn btn-ghost" onclick="startReschedule()">Reschedule</button>
+    <button class="btn btn-danger" onclick="showCancel()">Cancel</button>`);
+}
+
+/* ---------- Reschedule (native) ---------- */
+function startReschedule(){
+  const i = INFO;
+  if(i.withinCutoff){
+    return render(`<h1>Reschedules are closed</h1><p>Reschedules are free up to <strong>24 hours</strong> before your booking. Yours is now less than 24 hours away, so it can't be moved — but you can cancel it if you need to.</p>${detailHtml(i)}
+      <button class="btn btn-ghost" onclick="showCancel()">Cancel instead</button><p class="muted">Keeping your booking? Just close this page.</p>`);
   }
-
-  if(action === "cancel"){ window.__i = i; return showCancel(i); }
-
-  // default: offer both
-  window.__i = i;
-  return render(`<h1>Manage your booking</h1>${detailHtml(i)}
-    <button class="btn btn-ghost" onclick="reschedule(window.__i)">Reschedule</button>
-    <button class="btn btn-danger" onclick="showCancel(window.__i)">Cancel</button>`);
+  if(!i.eventTypeId){
+    return render(`<h1>Reschedule</h1><p>Please email <a href="mailto:matthew@matthewcawood.com" style="color:var(--accent)">matthew@matthewcawood.com</a> to move this booking.</p>${detailHtml(i)}`);
+  }
+  const now = new Date();
+  calYear = now.getFullYear(); calMonth = now.getMonth();
+  selDate = selSlot = null;
+  renderPicker();
+  prefetchMonth();
 }
 
-function reschedule(i){
-  if(!i.withinCutoff){ location.href = i.rescheduleUrl; }
-  else { action='cancel'; render(`<h1>Reschedules are closed</h1><p>Yours is less than 24 hours away, so it can't be moved — but you can cancel.</p>${detailHtml(i)}<button class="btn btn-danger" onclick="showCancel(window.__i)">Cancel instead</button>`); }
+function renderPicker(){
+  const monthName = new Date(calYear, calMonth, 1).toLocaleDateString("en-GB",{month:"long",year:"numeric"});
+  const first = new Date(calYear, calMonth, 1).getDay(); // 0=Sun
+  const lead = (first + 6) % 7; // make Monday first
+  const days = new Date(calYear, calMonth+1, 0).getDate();
+  const todayIso = new Date().toLocaleDateString("en-CA",{timeZone:TZ});
+  const nowM = new Date().getFullYear()*12 + new Date().getMonth();
+  const curM = calYear*12 + calMonth;
+  let cells = "";
+  ["Mo","Tu","We","Th","Fr","Sa","Su"].forEach(d=>cells+=`<div class="cal-dow">${d}</div>`);
+  for(let x=0;x<lead;x++) cells += `<div></div>`;
+  for(let d=1; d<=days; d++){
+    const iso = `${calYear}-${pad(calMonth+1)}-${pad(d)}`;
+    const avail = monthAvail ? monthAvail.has(iso) : false;
+    const cls = "cal-day" + (avail?" avail":"") + (iso===selDate?" sel":"");
+    cells += `<button class="${cls}" ${avail?`onclick="onDay('${iso}')"`:"disabled"}>${d}</button>`;
+  }
+  render(`<h1>Pick a new time</h1><p>Choose a new slot for your ${esc(INFO.label)}. Your current time stays booked until you confirm.</p>
+    <div class="cal-head">
+      <button class="cal-nav" ${curM<=nowM?"disabled":""} onclick="navMonth(-1)">‹</button>
+      <div class="cal-mon">${esc(monthName)}</div>
+      <button class="cal-nav" onclick="navMonth(1)">›</button>
+    </div>
+    <div class="cal-grid">${cells}</div>
+    <div id="slots"></div>
+    <p class="muted" id="picker-status">${monthAvail?"":"Loading availability…"}</p>`);
 }
 
-function showCancel(i){
+function navMonth(dir){
+  calMonth += dir;
+  if(calMonth<0){ calMonth=11; calYear--; }
+  if(calMonth>11){ calMonth=0; calYear++; }
+  selDate = selSlot = null; monthAvail = null;
+  renderPicker(); prefetchMonth();
+}
+
+async function prefetchMonth(){
+  const startDate = `${calYear}-${pad(calMonth+1)}-01`;
+  const last = new Date(calYear, calMonth+1, 0).getDate();
+  const endDate = `${calYear}-${pad(calMonth+1)}-${pad(last)}`;
+  try{
+    const p = new URLSearchParams({action:"slots", eventTypeId:String(INFO.eventTypeId), startDate, endDate, timeZone:TZ});
+    const r = await fetch(`${API}?${p}`, {cache:"no-store"});
+    const data = await r.json();
+    let all = []; if(data.data?.slots) all = Object.values(data.data.slots).flat(); else if(Array.isArray(data.data)) all = data.data;
+    const set = new Set(); all.forEach(s=>{ set.add(new Date(s.time||s).toLocaleDateString("en-CA",{timeZone:TZ})); });
+    monthAvail = set;
+  }catch(e){ monthAvail = new Set(); }
+  renderPicker();
+}
+
+async function onDay(iso){
+  selDate = iso; selSlot = null;
+  renderPicker();
+  const slotsEl = document.getElementById("slots");
+  slotsEl.innerHTML = `<div class="spin"></div>`;
+  try{
+    const p = new URLSearchParams({action:"slots", eventTypeId:String(INFO.eventTypeId), date:iso, timeZone:TZ});
+    const r = await fetch(`${API}?${p}`, {cache:"no-store"});
+    const data = await r.json();
+    let all = []; if(data.data?.slots) all = Object.values(data.data.slots).flat(); else if(Array.isArray(data.data)) all = data.data;
+    const times = all.map(s=>s.time||s).filter(t => new Date(t).toLocaleDateString("en-CA",{timeZone:TZ})===iso);
+    if(!times.length){ slotsEl.innerHTML = `<p class="muted">No times left that day — try another.</p>`; return; }
+    const lbl = new Date(iso+"T12:00:00").toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"});
+    slotsEl.innerHTML = `<div class="lbl">${esc(lbl)}</div><div class="times">${
+      times.map(t=>`<button class="time" data-t="${esc(t)}" onclick="pickSlot('${esc(t)}',this)">${new Date(t).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",timeZone:TZ})}</button>`).join("")
+    }</div><button class="btn btn-gold" id="confirmR" disabled onclick="doReschedule()" style="margin-top:18px">Confirm new time</button>`;
+  }catch(e){ slotsEl.innerHTML = `<p class="muted">Couldn't load times. Try again.</p>`; }
+}
+
+function pickSlot(t, btn){
+  selSlot = t;
+  document.querySelectorAll(".time").forEach(b=>b.classList.remove("sel"));
+  btn.classList.add("sel");
+  const c = document.getElementById("confirmR"); if(c) c.disabled = false;
+}
+
+async function doReschedule(){
+  if(!selSlot) return;
+  const c = document.getElementById("confirmR"); if(c){ c.disabled=true; c.textContent="Moving your booking…"; }
+  try{
+    const r = await fetch(API, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({uid, action:"reschedule", start:new Date(selSlot).toISOString()})});
+    const j = await r.json();
+    if(!j.ok){ if(j.error==="cutoff"){ return render(`<h1>Reschedules are closed</h1><p>Your booking is now less than 24 hours away, so it can't be moved. You can cancel instead.</p><button class="btn btn-ghost" onclick="showCancel()">Cancel</button>`);} throw new Error(j.error||"failed"); }
+    const when = new Date(selSlot).toLocaleString("en-GB",{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit",timeZone:TZ});
+    render(`<h1>Your booking has moved</h1><p>All done — your ${esc(INFO.label)} is now booked for:</p><div class="detail"><b>${esc(when)}</b></div><p class="muted">We've emailed you a fresh confirmation with the new calendar invite.</p>`);
+  }catch(e){ render(`<h1>Couldn't reschedule</h1><p>That slot may have just been taken. Please email <a href="mailto:matthew@matthewcawood.com" style="color:var(--accent)">matthew@matthewcawood.com</a> if it keeps happening.</p><button class="btn btn-ghost" onclick="startReschedule()">Try again</button>`); }
+}
+
+/* ---------- Cancel ---------- */
+function showCancel(){
+  const i = INFO;
   const creditWarn = i.isPackage
     ? `<p class="warn"><strong>Heads up:</strong> cancelling does not return your lesson credit. If you only need a different time and you're more than 24 hours away, reschedule instead.</p>` : "";
-  const reschedOpt = !i.withinCutoff ? `<button class="btn btn-ghost" onclick="reschedule(window.__i)">Reschedule instead</button>` : "";
+  const reschedOpt = !i.withinCutoff ? `<button class="btn btn-ghost" onclick="startReschedule()">Reschedule instead</button>` : "";
   render(`<h1>Cancel this booking?</h1><p>You're about to cancel your ${esc(i.label)} with Matthew.</p>${detailHtml(i)}${creditWarn}
-    <button class="btn btn-danger" id="confirmBtn" onclick="doCancel()">Yes, cancel my booking</button>
+    <button class="btn btn-danger" id="confirmC" onclick="doCancel()">Yes, cancel my booking</button>
     ${reschedOpt}
     <p class="muted">Changed your mind? Just close this page to keep your booking.</p>`);
 }
 
 async function doCancel(){
-  const btn = document.getElementById("confirmBtn");
-  if(btn){ btn.disabled = true; btn.textContent = "Cancelling…"; }
+  const btn = document.getElementById("confirmC"); if(btn){ btn.disabled=true; btn.textContent="Cancelling…"; }
   try{
-    const r = await fetch(API, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({uid, action:"cancel"})});
+    const r = await fetch(API, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({uid, action:"cancel"})});
     const j = await r.json();
     if(!j.ok) throw new Error(j.error||"failed");
-    const i = window.__i;
-    const note = i && i.isPackage ? `<p class="muted">As cancelled (rather than rescheduled), your lesson credit has not been returned.</p>` : "";
+    const note = INFO && INFO.isPackage ? `<p class="muted">As cancelled (rather than rescheduled), your lesson credit has not been returned.</p>` : "";
     render(`<h1>Your booking is cancelled</h1><p>That's done — the slot has been freed up.</p>${bookCta("Book a new time")}${note}`);
-  }catch(e){
-    render(`<h1>Couldn't cancel</h1><p>Something went wrong. Please email <a href="mailto:matthew@matthewcawood.com" style="color:var(--accent)">matthew@matthewcawood.com</a> and we'll sort it.</p>`);
-  }
+  }catch(e){ render(`<h1>Couldn't cancel</h1><p>Something went wrong. Please email <a href="mailto:matthew@matthewcawood.com" style="color:var(--accent)">matthew@matthewcawood.com</a> and we'll sort it.</p>`); }
 }
+
 load();
 </script>
 </body>
