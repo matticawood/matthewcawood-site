@@ -4,7 +4,7 @@
 <meta name="description" content="Sign in to see your courses, books, lessons and Practice Room membership in one place.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="/assets/img/icon.webp">
-<link rel="stylesheet" href="/assets/css/site.css?v=3">
+<link rel="stylesheet" href="/assets/css/site.css?v=4">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -31,8 +31,11 @@
   footer.site .brand-f{color:#fff} footer.site h4{color:#fff} footer.site a{color:#b7b7be} footer.site a:hover{color:var(--accent)}
   footer.site .legal{border-top-color:var(--border);color:#74747b}
 
-  .acct{max-width:720px;margin:0 auto;padding:0 22px}
-  .head{padding:60px 0 26px}
+  section{padding:0}                    /* override site.css section{padding:84px} */
+  .acct{max-width:720px;margin:0 auto;padding:0 22px 90px}
+  .head{padding:50px 0 24px}
+  #auth{max-width:440px;margin:0 auto}
+  #auth .head{text-align:center;padding-top:56px}
   .head .eyebrow{color:var(--gold-deep);font-size:.76rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
   .head h1{font-family:var(--serif);font-weight:600;color:#fff;letter-spacing:-.015em;font-size:clamp(2.3rem,5vw,3.3rem);line-height:1.05;margin:10px 0 8px}
   .head p{color:var(--muted);margin:0;max-width:540px;line-height:1.6}
