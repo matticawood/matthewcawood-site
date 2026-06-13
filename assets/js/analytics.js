@@ -11,6 +11,16 @@
                 window.mcTrack(ev, {}) -> fire a custom funnel event */
 (function () {
   var ENDPOINT = "/.netlify/functions/track";
+
+  // Owner self-exclude: load any page with ?notrack=1 once and this browser stops
+  // sending analytics (flag saved in localStorage). Use ?track=1 to resume.
+  try {
+    var _qp = new URLSearchParams(location.search);
+    if (_qp.has("notrack")) localStorage.setItem("mc_notrack", "1");
+    if (_qp.has("track")) localStorage.removeItem("mc_notrack");
+    if (localStorage.getItem("mc_notrack") === "1") return;
+  } catch (e) {}
+
   var vid;
   try {
     vid = localStorage.getItem("tpr_vid");
