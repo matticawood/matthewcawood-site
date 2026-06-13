@@ -67,6 +67,12 @@ header.site{position:sticky;top:0;z-index:40;background:rgba(10,10,11,.72);
 .nav-links a[aria-current=page]{color:var(--gold-dim)}
 .nav-links a.cta{background:var(--accent);color:var(--accent-ink);font-weight:800}
 .nav-links a.cta:hover{background:var(--gold-dim)}
+/* Icon links (Contact, My Account): icon-only on desktop, icon+label in the mobile menu */
+.nav-links .nav-ico{display:inline-flex;align-items:center;gap:9px;padding:8px 10px}
+.nav-links .nav-ico svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;flex:none}
+.nav-links .nav-ico span{display:none}
+.nav-links .nav-ico:first-of-type{margin-left:6px}
+@media(max-width:1120px){.nav-links .nav-ico{padding:13px 12px;margin-left:0}.nav-links .nav-ico span{display:inline}}
 .nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:8px}
 .nav-toggle svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:2}
 @media(max-width:1120px){

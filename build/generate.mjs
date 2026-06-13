@@ -41,7 +41,7 @@ function header(active){
   </a>
   <button class="nav-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
   <nav class="nav-links" id="nav">
-    ${link("/","Home")}${link("/about/","About")}${link("/store/","Store")}${link("/monday-music-tips/","Monday Music Tips")}${link("/book-a-lesson/","Book a Lesson")}${link("/contact/","Contact")}${link("/account/","My Account")}
+    ${link("/","Home")}${link("/about/","About")}${link("/store/","Store")}${link("/monday-music-tips/","Monday Music Tips")}${link("/book-a-lesson/","Book a Lesson")}<a class="nav-ico" href="/contact/" aria-label="Contact" title="Contact"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span>Contact</span></a><a class="nav-ico" href="/account/" aria-label="My Account" title="My Account"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg><span>My Account</span></a>
     <a class="cta" href="https://app.matthewcawood.com/signup">The Practice Room →</a>
   </nav></div></header>`;
 }
@@ -69,7 +69,7 @@ function shell({title, desc, body, active, extraHead=""}){
 <meta name="description" content="${esc(desc)}">
 <meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:type" content="article">
 <link rel="icon" href="/assets/img/icon.webp">
-<link rel="stylesheet" href="/assets/css/site.css?v=4">${extraHead}
+<link rel="stylesheet" href="/assets/css/site.css?v=5">${extraHead}
 </head><body>
 ${header(active)}
 ${body}
