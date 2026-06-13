@@ -41,7 +41,7 @@ function header(active){
   </a>
   <button class="nav-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
   <nav class="nav-links" id="nav">
-    ${link("/","Home")}${link("/about/","About")}${link("/store/","Store")}${link("/monday-music-tips/","Monday Music Tips")}${link("/book-a-lesson/","Book a Lesson")}${link("/contact/","Contact")}
+    ${link("/","Home")}${link("/about/","About")}${link("/store/","Store")}${link("/monday-music-tips/","Monday Music Tips")}${link("/book-a-lesson/","Book a Lesson")}${link("/contact/","Contact")}${link("/account/","My Account")}
     <a class="cta" href="https://app.matthewcawood.com/signup">The Practice Room →</a>
   </nav></div></header>`;
 }

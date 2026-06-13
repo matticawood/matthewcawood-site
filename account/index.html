@@ -1,0 +1,226 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Account, Matthew Cawood</title>
+<meta name="description" content="Sign in to see your courses, books, lessons and Practice Room membership in one place.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/assets/img/icon.webp">
+<link rel="stylesheet" href="/assets/css/site.css?v=3">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  .acct{max-width:760px;margin:0 auto;padding:56px 0 80px}
+  .acct h1{font-size:clamp(1.8rem,4vw,2.5rem);margin:0 0 6px}
+  .acct .sub{color:var(--muted);margin:0 0 30px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px 22px;margin:0 0 18px}
+  .panel-h{display:flex;align-items:center;gap:10px;font-size:1.05rem;font-weight:800;margin:0 0 14px}
+  .panel-h .pill{margin-left:auto;font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:4px 10px}
+  .row{display:flex;align-items:center;gap:14px;padding:13px 0;border-top:1px solid var(--border)}
+  .row:first-of-type{border-top:none}
+  .row .rb{flex:1;min-width:0}
+  .row .rt{font-weight:700;font-size:.98rem}
+  .row .rm{color:var(--muted);font-size:.85rem;margin-top:2px}
+  .lk{flex:none;background:var(--accent);color:var(--accent-ink);font-weight:800;border-radius:10px;padding:9px 15px;font-size:.86rem;text-decoration:none;white-space:nowrap}
+  .lk.ghost{background:transparent;border:1.5px solid var(--border-2);color:var(--text)}
+  .empty{color:var(--muted);font-size:.92rem}
+  .field{width:100%;box-sizing:border-box;border:1.5px solid var(--border-2);background:var(--bg);border-radius:11px;padding:13px 14px;font-size:1rem;color:var(--text);font-family:inherit;margin:0 0 12px}
+  .btn-full{width:100%;justify-content:center}
+  .note{font-size:.85rem;color:var(--muted);margin:10px 0 0}
+  .err{color:#f87171;font-size:.88rem;margin:8px 0 0;display:none}
+  .spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(0,0,0,.25);border-top-color:#1a1400;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .acct-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 30px}
+  .signout{background:none;border:1px solid var(--border-2);color:var(--muted);border-radius:9px;padding:8px 14px;font-size:.85rem;cursor:pointer;font-family:inherit}
+</style>
+</head><body>
+<header class="site"><div class="wrap nav">
+  <a class="brand" href="/">
+    <img class="brand-mark" src="/assets/img/m-logo.webp" width="34" height="34" alt="" aria-hidden="true">
+    <span>Matthew Cawood<small>Pianist · Producer · Educator</small></span>
+  </a>
+  <button class="nav-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+  <nav class="nav-links" id="nav">
+    <a href="/">Home</a><a href="/about/">About</a><a href="/store/">Store</a><a href="/monday-music-tips/">Monday Music Tips</a><a href="/book-a-lesson/">Book a Lesson</a><a href="/contact/">Contact</a><a href="/account/" aria-current="page">My Account</a>
+    <a class="cta" href="https://app.matthewcawood.com/signup">The Practice Room →</a>
+  </nav>
+</div></header>
+
+<section><div class="wrap acct">
+
+  <!-- ── Logged out: email OTP ── -->
+  <div id="auth">
+    <h1>My Account</h1>
+    <p class="sub">Sign in with your email to see your courses, books, lessons and Practice Room membership in one place. No password needed.</p>
+    <div class="card" style="max-width:420px">
+      <div id="step-email">
+        <label style="font-weight:700;font-size:.9rem;display:block;margin:0 0 8px">Your email</label>
+        <input class="field" id="email" type="email" placeholder="you@email.com" autocomplete="email">
+        <button class="btn btn-full" id="send-btn" onclick="sendCode()">Email me a sign-in code</button>
+        <p class="note">Use the same email you bought or booked with.</p>
+        <div class="err" id="email-err"></div>
+      </div>
+      <div id="step-code" style="display:none">
+        <label style="font-weight:700;font-size:.9rem;display:block;margin:0 0 8px">Enter the 6-digit code we just emailed you</label>
+        <input class="field" id="code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="123456">
+        <button class="btn btn-full" id="verify-btn" onclick="verifyCode()">Sign in</button>
+        <p class="note"><a href="#" onclick="backToEmail();return false" style="color:var(--gold-dim)">Use a different email</a></p>
+        <div class="err" id="code-err"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Logged in: account ── -->
+  <div id="account" style="display:none">
+    <div class="acct-top">
+      <div><h1 style="margin:0">Your account</h1><p class="sub" style="margin:4px 0 0" id="who"></p></div>
+      <button class="signout" onclick="signOut()">Sign out</button>
+    </div>
+
+    <div class="card">
+      <div class="panel-h">Your purchases</div>
+      <div id="purchases"><p class="empty">Loading…</p></div>
+    </div>
+
+    <div class="card">
+      <div class="panel-h">Your lessons</div>
+      <div id="lessons"><p class="empty">Loading…</p></div>
+    </div>
+
+    <div class="card">
+      <div class="panel-h">The Practice Room</div>
+      <div id="membership"><p class="empty">Loading…</p></div>
+    </div>
+  </div>
+
+</div></section>
+
+<footer class="site"><div class="wrap">
+  <div><div class="brand-f">Matthew Cawood</div><p style="color:#8a8a90;margin:0;font-size:.95rem;max-width:300px">Pianist, producer and educator. Making music theory and technique genuinely understandable.</p></div>
+  <div><h4>Explore</h4><a href="/about/">About</a><a href="/store/">Store</a><a href="/monday-music-tips/">Monday Music Tips</a><a href="/book-a-lesson/">Book a Lesson</a><a href="/contact/">Contact</a></div>
+  <div><h4>The Practice Room</h4><a href="https://app.matthewcawood.com/signup">Join the app</a><a href="https://app.matthewcawood.com/">Sign in</a><a href="https://www.youtube.com/@matticawood" target="_blank" rel="noopener">YouTube</a><a href="https://www.instagram.com/matticawood" target="_blank" rel="noopener">Instagram</a></div>
+  <div class="legal"><span>© 2026 Matthew Cawood. All rights reserved.</span><span>enquiries@matthewcawood.com</span></div>
+</div></footer>
+
+<script>
+const SUPA = "https://gyskfutmncprqxazgatv.supabase.co";
+const ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5c2tmdXRtbmNwcnF4YXpnYXR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3NjIwMTYsImV4cCI6MjA5MTMzODAxNn0.ttC3plmhbA7ls_T3w25XgYT0WBt6O3MMu0G6NrEKI9g";
+const FN  = SUPA + "/functions/v1";
+const APP = "https://app.matthewcawood.com";
+const sb  = supabase.createClient(SUPA, ANON);
+
+// slug → display title + type (mirrors _shared/store-catalog.ts)
+const CATALOG = {
+  "the-art-of-understanding-music":      {title:"The Art of Understanding Music", type:"course"},
+  "beginner-sight-reading-book":         {title:"Beginner Sight Reading Exercises Book", type:"pdf"},
+  "beginners-guide-reading-sheet-music": {title:"Beginners Guide to Reading Sheet Music", type:"pdf"},
+  "playing-by-ear-theory":               {title:"Playing by Ear: Theory Exercises", type:"pdf"},
+  "30-ways-to-play-a-chord":             {title:"30 Ways to Play a Chord", type:"pdf"},
+  "4-fun-techniques":                    {title:"4 Fun Techniques to Transform Your Playing", type:"pdf"},
+  "technical-exercises":                 {title:"Technical Exercises to Transform Your Playing", type:"pdf"},
+  "4-levels-chord-patterns":             {title:"4 Levels of Chord Patterns", type:"pdf"},
+  "how-to-reharmonise":                  {title:"How to Reharmonise Any Song", type:"pdf"},
+  "practice-planner":                    {title:"Practice Planner Template", type:"pdf"},
+};
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const titleOf = slug => (CATALOG[slug] && CATALOG[slug].title) || slug;
+const $ = id => document.getElementById(id);
+function showErr(id,msg){ const e=$(id); e.textContent=msg; e.style.display="block"; }
+function clrErr(id){ $(id).style.display="none"; }
+
+let pendingEmail = "";
+
+async function sendCode(){
+  clrErr("email-err");
+  const email = $("email").value.trim().toLowerCase();
+  if(!/.+@.+\..+/.test(email)){ showErr("email-err","Please enter a valid email."); return; }
+  const btn=$("send-btn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> Sending…';
+  const { error } = await sb.auth.signInWithOtp({ email, options:{ shouldCreateUser:true } });
+  btn.disabled=false; btn.textContent="Email me a sign-in code";
+  if(error){ showErr("email-err", error.message); return; }
+  pendingEmail = email;
+  $("step-email").style.display="none"; $("step-code").style.display="block";
+  setTimeout(()=>$("code").focus(),50);
+}
+function backToEmail(){ $("step-code").style.display="none"; $("step-email").style.display="block"; clrErr("code-err"); }
+
+async function verifyCode(){
+  clrErr("code-err");
+  const token = $("code").value.trim();
+  if(!token){ showErr("code-err","Enter the code."); return; }
+  const btn=$("verify-btn"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> Signing in…';
+  const { error } = await sb.auth.verifyOtp({ email: pendingEmail, token, type:"email" });
+  btn.disabled=false; btn.textContent="Sign in";
+  if(error){ showErr("code-err","That code wasn't right or has expired. Please try again."); return; }
+  boot();
+}
+
+async function signOut(){ await sb.auth.signOut(); location.reload(); }
+
+async function boot(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!session){ $("auth").style.display="block"; $("account").style.display="none"; return; }
+  const email = (session.user.email||"").toLowerCase();
+  $("auth").style.display="none"; $("account").style.display="block";
+  $("who").textContent = "Signed in as " + email;
+  renderPurchases(email);
+  renderLessons(email);
+  renderMembership(email);
+}
+
+async function renderPurchases(email){
+  const el=$("purchases");
+  const { data, error } = await sb.from("store_orders").select("slug,kind,access_token,created_at").order("created_at",{ascending:false});
+  if(error){ el.innerHTML='<p class="empty">Could not load your purchases right now.</p>'; return; }
+  // de-dupe by slug (one row per product, keep newest token)
+  const seen=new Set(), rows=[];
+  for(const o of (data||[])){ if(seen.has(o.slug))continue; seen.add(o.slug); rows.push(o); }
+  if(!rows.length){ el.innerHTML='<p class="empty">No purchases yet. <a href="/store/" style="color:var(--gold-dim)">Browse the store →</a></p>'; return; }
+  el.innerHTML = rows.map(o=>{
+    const t = (CATALOG[o.slug] && CATALOG[o.slug].type) || o.kind;
+    const isCourse = t==="course";
+    const href = isCourse ? `/store/learn/?t=${encodeURIComponent(o.access_token)}` : `${FN}/store-access?token=${encodeURIComponent(o.access_token)}`;
+    const label = isCourse ? "Open the course →" : "Download →";
+    return `<div class="row"><div class="rb"><div class="rt">${esc(titleOf(o.slug))}</div><div class="rm">${isCourse?"Course":"PDF"}</div></div><a class="lk" href="${href}"${isCourse?"":' target="_blank" rel="noopener"'}>${label}</a></div>`;
+  }).join("");
+}
+
+async function renderLessons(email){
+  const el=$("lessons");
+  let creditsHtml="", bookingsHtml="";
+  // credits (edge fn handles 12-month expiry)
+  try{
+    const r = await fetch(`${FN}/lesson-credits?email=${encodeURIComponent(email)}`, { headers:{ Authorization:`Bearer ${ANON}` } });
+    const j = await r.json();
+    if(j && j.remaining>0) creditsHtml = `<div class="row"><div class="rb"><div class="rt">${j.remaining} lesson${j.remaining===1?"":"s"} remaining</div><div class="rm">From your lesson package</div></div><a class="lk" href="/book-a-lesson/">Book one →</a></div>`;
+  }catch(e){}
+  // upcoming bookings
+  try{
+    const nowISO = new Date().toISOString();
+    const { data } = await sb.from("bookings").select("cal_uid,start_time,meeting_url,kind").gte("start_time", nowISO).order("start_time",{ascending:true});
+    for(const b of (data||[])){
+      if(!b.start_time) continue;
+      const when = new Date(b.start_time).toLocaleString("en-GB",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+      const kind = b.kind==="package" ? "Lesson" : (b.kind||"Lesson").replace("min"," min");
+      const zoom = b.meeting_url ? `<a class="lk" href="${esc(b.meeting_url)}" target="_blank" rel="noopener">Join →</a>` : "";
+      const manage = b.cal_uid ? `<a class="lk ghost" href="/manage/?uid=${encodeURIComponent(b.cal_uid)}">Manage</a>` : "";
+      bookingsHtml += `<div class="row"><div class="rb"><div class="rt">${esc(kind)}</div><div class="rm">${esc(when)}</div></div>${zoom}${manage}</div>`;
+    }
+  }catch(e){}
+  const cta = `<div class="row"><div class="rb"><div class="rt">Book a lesson or clinic</div><div class="rm">20-min clinic, 30-min clinic, or a full hour</div></div><a class="lk ghost" href="/book-a-lesson/">Book →</a></div>`;
+  const body = (bookingsHtml||creditsHtml) ? (bookingsHtml + creditsHtml + cta) : (`<p class="empty" style="margin:0 0 6px">No upcoming lessons.</p>` + cta);
+  el.innerHTML = body;
+}
+
+async function renderMembership(email){
+  const el=$("membership");
+  const { data } = await sb.from("allowed_emails").select("email").limit(1);
+  const isMember = Array.isArray(data) && data.length>0;
+  if(isMember){
+    el.innerHTML = `<div class="row"><div class="rb"><div class="rt">Active member</div><div class="rm">Full access to The Practice Room</div></div><a class="lk" href="${APP}/" target="_blank" rel="noopener">Open the app →</a></div>`;
+  }else{
+    el.innerHTML = `<div class="row"><div class="rb"><div class="rt">Not a member yet</div><div class="rm">A roadmap from beginner to advanced, a pieces library, live clinics and a community.</div></div><a class="lk" href="${APP}/signup" target="_blank" rel="noopener">Join →</a></div>`;
+  }
+}
+
+boot();
+</script>
+<script src="/assets/js/analytics.js" defer></script>
+</body></html>
