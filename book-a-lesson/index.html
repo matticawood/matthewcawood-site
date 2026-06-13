@@ -418,6 +418,7 @@ function show(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.r
 // ── product selection ──
 function pickSingle(key){
   clinic = PRODUCTS[key]; mode = "single";
+  window.mcTrack && window.mcTrack("lesson_select",{slug:key});
   if (key==="l60" && !clinic.id){ alert("1-hour lessons aren't quite set up yet, please try a clinic, or contact Matthew."); return; }
   startBooking();
 }
@@ -467,7 +468,8 @@ async function buyPackage(){
   if(!/.+@.+\..+/.test(email)){ err.textContent="Please enter a valid email."; err.style.display="block"; return; }
   const btn=document.getElementById("pkg-btn"); btn.disabled=true; btn.innerHTML='<span class="spin dk"></span> Preparing…';
   try{
-    const res=await fetch(`${FN}/clinic-checkout`,{method:"POST",headers:AUTH,body:JSON.stringify({ pkg:curPkg.pkg, name, email, currency:CURRENCY, pageUrl:location.href.split("?")[0] })});
+    window.mcTrack && window.mcTrack("lesson_checkout_click",{slug:"pkg"+curPkg.pkg});
+    const res=await fetch(`${FN}/clinic-checkout`,{method:"POST",headers:AUTH,body:JSON.stringify({ pkg:curPkg.pkg, name, email, currency:CURRENCY, vid:window.mcVid, pageUrl:location.href.split("?")[0] })});
     const data=await res.json();
     if(data.url) location.href=data.url; else throw new Error(data.error||"Error");
   }catch(e){ err.textContent=e.message; err.style.display="block"; btn.disabled=false; btn.innerHTML="Continue to payment →"; }
@@ -550,7 +552,7 @@ async function fetchSlots(date){
   }catch(e){ return null; }
 }
 function clearSlots(){ document.getElementById("slots-empty-state").style.display=""; document.getElementById("slots-day-hdr").style.display="none"; document.getElementById("slots-list").innerHTML=""; }
-function onSlot(iso,btn){ selSlot=iso; document.querySelectorAll(".slot-btn").forEach(b=>b.classList.remove("sel")); btn.classList.add("sel"); openDetails(iso); }
+function onSlot(iso,btn){ selSlot=iso; document.querySelectorAll(".slot-btn").forEach(b=>b.classList.remove("sel")); btn.classList.add("sel"); window.mcTrack && window.mcTrack("slot_select"); openDetails(iso); }
 function openDetails(iso){
   const dateStr=new Date(iso).toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:userTZ});
   document.getElementById("det-title").textContent = mode==="redeem" ? "1-hour lesson (package)" : `${clinic.title} · ${clinic.price}`;
@@ -591,7 +593,8 @@ async function confirmBooking(){
       if(!res.ok || data.error) throw new Error(data.error||"Booking failed");
       result(IC_DONE,"You're booked in!",`Your 1-hour lesson is confirmed, check your email for the details. You have ${data.remaining} lesson${data.remaining===1?"":"s"} left in your package.`);
     } else {
-      const res=await fetch(`${FN}/clinic-checkout`,{method:"POST",headers:AUTH,body:JSON.stringify({ eventTypeId:clinic.id, startTime:new Date(selSlot).toISOString(), duration:clinic.duration, name:fname, email, timeZone:userTZ, currency:CURRENCY, notes:notes||undefined, fileUrl:fileUrl||undefined, pageUrl:location.href.split("?")[0] })});
+      window.mcTrack && window.mcTrack("lesson_checkout_click");
+      const res=await fetch(`${FN}/clinic-checkout`,{method:"POST",headers:AUTH,body:JSON.stringify({ eventTypeId:clinic.id, startTime:new Date(selSlot).toISOString(), duration:clinic.duration, name:fname, email, timeZone:userTZ, currency:CURRENCY, vid:window.mcVid, notes:notes||undefined, fileUrl:fileUrl||undefined, pageUrl:location.href.split("?")[0] })});
       const data=await res.json();
       if(data.url) location.href=data.url; else throw new Error(data.error||"Error");
     }
@@ -610,4 +613,5 @@ function result(icon,title,msg){ document.getElementById("res-emoji").innerHTML=
   else if(q.get("cancelled")) result(IC_UNDO,"Checkout cancelled","No payment was taken. You can pick another time whenever you're ready.");
 })();
 </script>
+<script src="/assets/js/analytics.js" defer></script>
 </body></html>

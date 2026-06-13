@@ -75,6 +75,7 @@ ${header(active)}
 ${body}
 ${footer()}
 ${subscribeJS}
+<script src="/assets/js/analytics.js" defer></script>
 <script src="/assets/reveal.js" defer></script>
 </body></html>`;
 }
@@ -428,7 +429,8 @@ const storeJS = `<script>
   document.querySelectorAll("[data-buy]").forEach(function(btn){
     btn.addEventListener("click",function(){
       var slug=btn.getAttribute("data-buy"); btn.disabled=true; var t=btn.textContent; btn.textContent="Loading…";
-      fetch(FN+"store-checkout",{method:"POST",headers:{"Content-Type":"application/json",apikey:ANON,Authorization:"Bearer "+ANON},body:JSON.stringify({slug:slug,pageUrl:location.origin+location.pathname})})
+      window.mcTrack && window.mcTrack("checkout_click",{slug:slug});
+      fetch(FN+"store-checkout",{method:"POST",headers:{"Content-Type":"application/json",apikey:ANON,Authorization:"Bearer "+ANON},body:JSON.stringify({slug:slug,vid:(window.mcVid||null),pageUrl:location.origin+location.pathname})})
         .then(function(r){return r.json();})
         .then(function(d){ if(d.url){location.href=d.url;} else {btn.disabled=false;btn.textContent=t;alert(d.error||"Something went wrong.");} })
         .catch(function(){btn.disabled=false;btn.textContent=t;alert("Something went wrong.");});
