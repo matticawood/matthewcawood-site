@@ -271,6 +271,10 @@
         <div class="slots-list" id="slots-list"></div>
       </div>
     </div>
+    <div id="basket-bar" style="display:none;position:sticky;bottom:12px;margin-top:16px;background:var(--surface);border:1px solid var(--border-2);border-radius:14px;padding:14px 16px;z-index:5">
+      <div id="basket-chips" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px"></div>
+      <button class="btn" id="basket-continue" style="width:100%;justify-content:center" onclick="openRedeemReview()">Continue</button>
+    </div>
   </div>
 
   <!-- DETAILS (single booking or redeem) -->
@@ -407,6 +411,8 @@ function onTzChange(tz){
 let mode = "single";        // 'single' | 'redeem'
 let clinic = null;          // selected product
 let redeemEmail = "";
+let basket = [];            // redeem mode: ISO slots queued to book together
+let redeemRemaining = 0;    // package credits available
 let calYear, calMonth, selDate=null, selSlot=null, monthAvail=null, loadingAvail=false, selFiles=[];
 
 const pad = n => String(n).padStart(2,"0");
@@ -423,11 +429,12 @@ function pickSingle(key){
   startBooking();
 }
 function startBooking(){
-  selDate=null; selSlot=null; monthAvail=null;
+  selDate=null; selSlot=null; monthAvail=null; basket=[];
   const now=new Date(); calYear=now.getFullYear(); calMonth=now.getMonth();
-  document.getElementById("bk-title").textContent = mode==="redeem" ? "Book your lesson" : `Pick a time`;
+  document.getElementById("bk-title").textContent = mode==="redeem" ? "Book your lessons" : `Pick a time`;
   document.getElementById("bk-sub").textContent = mode==="redeem"
-    ? `1-hour lesson · using a package credit` : `${clinic.title} · ${clinic.price}`;
+    ? `You have ${redeemRemaining} lesson${redeemRemaining===1?"":"s"} left. Pick one or more, then book them together.` : `${clinic.title} · ${clinic.price}`;
+  renderBasket();
   populateTz(); clearSlots(); show("screen-booking"); renderMonth();
   loadMonthAvailability(calYear,calMonth).then(()=>{ renderMonth(); autoSelectFirst(); });
 }
@@ -486,7 +493,7 @@ async function checkCredits(){
     const data=await res.json();
     if((data.remaining||0)<=0){ err.textContent="No lessons found for that email. If you've just bought a package, give it a minute and try again."; err.style.display="block"; return; }
     if(!EVENT_1HR){ err.textContent="Lesson booking isn't quite set up yet, please contact Matthew to schedule."; err.style.display="block"; return; }
-    redeemEmail=email; mode="redeem"; clinic=PRODUCTS.l60; startBooking();
+    redeemEmail=email; redeemRemaining=data.remaining||0; basket=[]; mode="redeem"; clinic=PRODUCTS.l60; startBooking();
   }catch(e){ err.textContent="Something went wrong, please try again."; err.style.display="block"; }
   finally{ btn.disabled=false; btn.innerHTML="Check my lessons →"; }
 }
@@ -542,7 +549,7 @@ async function onDay(date){
   const slots=await fetchSlots(date);
   if(!slots){ document.getElementById("slots-list").innerHTML=`<div class="slot-empty" style="color:#c0392b">Error loading times.</div>`; return; }
   if(!slots.length){ document.getElementById("slots-list").innerHTML=`<div class="slot-empty">No times available this day.</div>`; return; }
-  document.getElementById("slots-list").innerHTML=slots.map(t=>`<button class="slot-btn" onclick="onSlot('${t}',this)">${fmtTime(t)}</button>`).join("");
+  document.getElementById("slots-list").innerHTML=slots.map(t=>`<button class="slot-btn${basket.indexOf(t)>-1?" sel":""}" data-iso="${t}" onclick="onSlot('${t}',this)">${fmtTime(t)}</button>`).join("");
 }
 async function fetchSlots(date){
   try{ const p=new URLSearchParams({action:"slots",eventTypeId:String(clinic.id),date,timeZone:userTZ});
@@ -552,7 +559,57 @@ async function fetchSlots(date){
   }catch(e){ return null; }
 }
 function clearSlots(){ document.getElementById("slots-empty-state").style.display=""; document.getElementById("slots-day-hdr").style.display="none"; document.getElementById("slots-list").innerHTML=""; }
-function onSlot(iso,btn){ selSlot=iso; document.querySelectorAll(".slot-btn").forEach(b=>b.classList.remove("sel")); btn.classList.add("sel"); window.mcTrack && window.mcTrack("slot_select"); openDetails(iso); }
+function onSlot(iso,btn){
+  window.mcTrack && window.mcTrack("slot_select");
+  if(mode==="redeem"){ toggleBasket(iso,btn); return; }
+  selSlot=iso; document.querySelectorAll(".slot-btn").forEach(b=>b.classList.remove("sel")); btn.classList.add("sel"); openDetails(iso);
+}
+function toggleBasket(iso,btn){
+  const i=basket.indexOf(iso);
+  if(i>-1){ basket.splice(i,1); btn&&btn.classList.remove("sel"); }
+  else{
+    if(basket.length>=redeemRemaining){ flashBasketCap(); return; }
+    basket.push(iso); btn&&btn.classList.add("sel");
+  }
+  renderBasket();
+}
+function flashBasketCap(){
+  const bar=document.getElementById("basket-bar"); if(!bar) return;
+  let note=document.getElementById("basket-cap");
+  if(!note){ note=document.createElement("div"); note.id="basket-cap"; note.style.cssText="color:#e0a93f;font-size:.82rem;margin-bottom:8px"; bar.insertBefore(note,bar.firstChild); }
+  note.textContent=`That's all ${redeemRemaining} of your lessons. Remove one to swap it.`;
+  clearTimeout(window._capT); window._capT=setTimeout(()=>{ note&&note.remove(); },2600);
+}
+function renderBasket(){
+  const bar=document.getElementById("basket-bar"); if(!bar) return;
+  if(mode!=="redeem" || !basket.length){ bar.style.display="none"; return; }
+  bar.style.display="block";
+  const chips=document.getElementById("basket-chips");
+  chips.innerHTML=[...basket].sort().map(t=>{
+    const lbl=new Date(t).toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short",timeZone:userTZ})+", "+fmtTime(t);
+    return `<span style="display:inline-flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--border-2);border-radius:999px;padding:6px 8px 6px 13px;font-size:.83rem;color:var(--text)">${lbl}<button type="button" aria-label="Remove" onclick="removeFromBasket('${t}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;line-height:1;padding:0">&times;</button></span>`;
+  }).join("");
+  document.getElementById("basket-continue").textContent=`Continue with ${basket.length} lesson${basket.length===1?"":"s"} →`;
+}
+function removeFromBasket(iso){
+  const i=basket.indexOf(iso); if(i>-1) basket.splice(i,1);
+  const btn=document.querySelector(`.slot-btn[data-iso="${iso}"]`); if(btn) btn.classList.remove("sel");
+  renderBasket();
+}
+window.removeFromBasket=removeFromBasket; window.openRedeemReview=openRedeemReview;
+function openRedeemReview(){
+  if(!basket.length) return;
+  const sorted=[...basket].sort();
+  document.getElementById("det-title").textContent = sorted.length>1 ? `${sorted.length} lessons (package)` : "1-hour lesson (package)";
+  document.getElementById("det-meta").innerHTML = sorted.map(t=>{
+    const d=new Date(t).toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",timeZone:userTZ});
+    return `${d} at ${fmtTime(t)} ${tzShort()}`.trim();
+  }).join("<br>");
+  document.getElementById("inp-email").value=redeemEmail; document.getElementById("inp-email").readOnly=true;
+  document.getElementById("err-msg").style.display="none";
+  const b=document.getElementById("pay-btn"); b.disabled=false; b.innerHTML = sorted.length>1 ? `Book my ${sorted.length} lessons →` : "Book my lesson →";
+  show("screen-details");
+}
 function openDetails(iso){
   const dateStr=new Date(iso).toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:userTZ});
   document.getElementById("det-title").textContent = mode==="redeem" ? "1-hour lesson (package)" : `${clinic.title} · ${clinic.price}`;
@@ -588,10 +645,16 @@ async function confirmBooking(){
     let fileUrl=null;
     if(selFiles.length){ try{ fileUrl=(await Promise.all(selFiles.map(uploadAttachment))).join(", "); }catch(_){} }
     if(mode==="redeem"){
-      const res=await fetch(`${FN}/lesson-redeem`,{method:"POST",headers:AUTH,body:JSON.stringify({ email, eventTypeId:clinic.id, startTime:new Date(selSlot).toISOString(), name:fname, timeZone:userTZ, notes:notes||undefined, fileUrl:fileUrl||undefined })});
+      const slots = (basket.length ? basket : [selSlot]).map(t=>new Date(t).toISOString());
+      const res=await fetch(`${FN}/lesson-redeem`,{method:"POST",headers:AUTH,body:JSON.stringify({ email, eventTypeId:clinic.id, slots, name:fname, timeZone:userTZ, notes:notes||undefined, fileUrl:fileUrl||undefined })});
       const data=await res.json();
       if(!res.ok || data.error) throw new Error(data.error||"Booking failed");
-      result(IC_DONE,"You're booked in!",`Your 1-hour lesson is confirmed, check your email for the details. You have ${data.remaining} lesson${data.remaining===1?"":"s"} left in your package.`);
+      const n=data.booked||slots.length;
+      let msg=`${n>1?`Your ${n} lessons are`:"Your lesson is"} confirmed, check your email for the details.`;
+      if(data.failed) msg+=` ${data.failed} time${data.failed===1?"":"s"} had just been taken and ${data.failed===1?"was":"were"} skipped.`;
+      msg+=` You have ${data.remaining} lesson${data.remaining===1?"":"s"} left in your package.`;
+      basket=[];
+      result(IC_DONE, n>1?"You're all booked in!":"You're booked in!", msg);
     } else {
       window.mcTrack && window.mcTrack("lesson_checkout_click");
       const res=await fetch(`${FN}/clinic-checkout`,{method:"POST",headers:AUTH,body:JSON.stringify({ eventTypeId:clinic.id, startTime:new Date(selSlot).toISOString(), duration:clinic.duration, name:fname, email, timeZone:userTZ, currency:CURRENCY, vid:window.mcVid, notes:notes||undefined, fileUrl:fileUrl||undefined, pageUrl:location.href.split("?")[0] })});
@@ -611,6 +674,10 @@ function result(icon,title,msg){ document.getElementById("res-emoji").innerHTML=
   const q=new URLSearchParams(location.search);
   if(q.get("success")) result(IC_DONE,"Payment received!","Thanks, your booking is confirmed and you'll get an email with the details shortly. If you bought a package, the email explains how to book each lesson.");
   else if(q.get("cancelled")) result(IC_UNDO,"Checkout cancelled","No payment was taken. You can pick another time whenever you're ready.");
+  else if(q.get("redeem")){
+    const em=(q.get("redeem")||"").trim().toLowerCase();
+    if(/.+@.+\..+/.test(em)){ document.getElementById("rd-email").value=em; show("screen-redeem-email"); checkCredits(); }
+  }
 })();
 </script>
 <script src="/assets/js/analytics.js?v=2" defer></script>

@@ -235,7 +235,7 @@ async function renderLessons(email){
   try{
     const r = await fetch(`${FN}/lesson-credits?email=${encodeURIComponent(email)}`, { headers:{ Authorization:`Bearer ${ANON}` } });
     const j = await r.json();
-    if(j && j.remaining>0) creditsHtml = `<div class="row"><div class="rb"><div class="rt">${j.remaining} lesson${j.remaining===1?"":"s"} remaining</div><div class="rm">From your lesson package</div></div><a class="lk" href="/book-a-lesson/">Book one →</a></div>`;
+    if(j && j.remaining>0) creditsHtml = `<div class="row"><div class="rb"><div class="rt">${j.remaining} lesson${j.remaining===1?"":"s"} remaining</div><div class="rm">From your lesson package</div></div><a class="lk" href="/book-a-lesson/?redeem=${encodeURIComponent(email)}">Book ${j.remaining>1?"lessons":"one"} →</a></div>`;
   }catch(e){}
   try{
     const nowISO = new Date().toISOString();
