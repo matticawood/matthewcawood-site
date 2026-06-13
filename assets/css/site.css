@@ -73,6 +73,7 @@ header.site{position:sticky;top:0;z-index:40;background:rgba(10,10,11,.72);
 .nav-links .nav-ico span{display:none}
 .nav-links .nav-ico:first-of-type{margin-left:10px}   /* separate the utility pair from the text links */
 .nav-links .nav-ico + .nav-ico{margin-left:-3px}      /* pull the two icons together as a set */
+.nav-links.nav-no-anim{transition:none!important}     /* suppress the slide while the viewport is resizing (no breakpoint-cross flash) */
 @media(max-width:1120px){.nav-links .nav-ico{padding:13px 12px;margin-left:0}.nav-links .nav-ico + .nav-ico{margin-left:0}.nav-links .nav-ico span{display:inline}}
 .nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:8px}
 .nav-toggle svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:2}

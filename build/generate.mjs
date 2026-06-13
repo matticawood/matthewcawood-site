@@ -69,13 +69,13 @@ function shell({title, desc, body, active, extraHead=""}){
 <meta name="description" content="${esc(desc)}">
 <meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:type" content="article">
 <link rel="icon" href="/assets/img/icon.webp">
-<link rel="stylesheet" href="/assets/css/site.css?v=6">${extraHead}
+<link rel="stylesheet" href="/assets/css/site.css?v=7">${extraHead}
 </head><body>
 ${header(active)}
 ${body}
 ${footer()}
 ${subscribeJS}
-<script src="/assets/js/analytics.js" defer></script>
+<script src="/assets/js/analytics.js?v=2" defer></script>
 <script src="/assets/reveal.js" defer></script>
 </body></html>`;
 }

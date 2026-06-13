@@ -12,6 +12,20 @@
 (function () {
   var ENDPOINT = "/.netlify/functions/track";
 
+  // Mobile nav: suppress its slide transition while the viewport is resizing, so it
+  // doesn't visibly animate when the layout crosses the hamburger breakpoint. The
+  // tap-to-open slide still works (the class is only on during an active resize).
+  (function () {
+    var nav = document.getElementById("nav");
+    if (!nav) return;
+    var t;
+    window.addEventListener("resize", function () {
+      nav.classList.add("nav-no-anim");
+      clearTimeout(t);
+      t = setTimeout(function () { nav.classList.remove("nav-no-anim"); }, 250);
+    });
+  })();
+
   // Owner self-exclude: load any page with ?notrack=1 once and this browser stops
   // sending analytics (flag saved in localStorage). Use ?track=1 to resume.
   try {
