@@ -294,7 +294,7 @@ const STORE_CSS = `<style>
 .product-detail .pd-cover img{width:100%;display:block}
 @media(max-width:820px){.product-detail .pd-cover{position:static;max-width:340px;margin:0 auto}}
 .product-detail .pd-gallery{position:sticky;top:96px}
-.product-detail .pd-gallery .pd-cover{position:relative}
+.product-detail .pd-gallery .pd-cover{position:relative;top:auto}
 .pd-sample-badge{position:absolute;top:10px;left:10px;background:rgba(10,10,11,.82);color:var(--gold-dim);border:1px solid var(--border-2);font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:8px;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 .pd-sample-badge[hidden]{display:none}
 .pd-thumb.is-sample{box-shadow:inset 0 -3px 0 var(--gold-deep)}
