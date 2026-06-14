@@ -297,7 +297,7 @@ const STORE_CSS = `<style>
 .product-detail .pd-gallery .pd-cover{position:relative;top:auto}
 .pd-sample-badge{position:absolute;top:10px;left:10px;background:rgba(10,10,11,.82);color:var(--gold-dim);border:1px solid var(--border-2);font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:8px;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 .pd-sample-badge[hidden]{display:none}
-.pd-sample-veil{position:absolute;left:0;right:0;bottom:0;height:56%;pointer-events:none;display:flex;align-items:flex-end;justify-content:center;padding-bottom:16px;background:linear-gradient(to bottom,rgba(13,13,15,0) 0%,rgba(13,13,15,.5) 30%,rgba(13,13,15,.94) 70%,#0d0d0f 100%);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 34%);mask-image:linear-gradient(to bottom,transparent 0%,#000 34%)}
+.pd-sample-veil{position:absolute;left:0;right:0;bottom:0;height:56%;pointer-events:none;display:flex;align-items:flex-end;justify-content:center;padding-bottom:16px;background:linear-gradient(to bottom,rgba(255,255,255,0) 0%,rgba(255,255,255,.5) 30%,rgba(255,255,255,.95) 72%,#fff 100%);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 34%);mask-image:linear-gradient(to bottom,transparent 0%,#000 34%)}
 .pd-sample-veil[hidden]{display:none}
 .pd-sample-veil span{font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-dim);background:rgba(10,10,11,.78);border:1px solid var(--border-2);padding:5px 11px;border-radius:8px}
 .pd-thumb.is-sample{box-shadow:inset 0 -3px 0 var(--gold-deep)}
