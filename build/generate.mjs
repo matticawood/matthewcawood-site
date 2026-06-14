@@ -168,7 +168,7 @@ const STORE = [
       "Enough exercises to take your sight reading to a level where you can confidently read pieces of music.",
       "Divided into three sections: 150 right-hand fundamentals, 150 left-hand fundamentals, and 120 Grade 1 level exercises. The first two sections build through six incrementally harder levels and can be worked simultaneously to develop both hands at once.",
       "Available as a digital download.",
-    ], gallery:["beginner-sight-reading-book-2"], samples:["beginner-sight-reading-book-sample-1"] },
+    ], samples:["beginner-sight-reading-book-sample-1","beginner-sight-reading-book-sample-2"] },
 
   { slug:"beginners-guide-reading-sheet-music", title:"Beginners Guide to Reading Sheet Music", collection:"books", type:"pdf", price:1499,
     tagline:"Everything you need to start reading sheet music with confidence.",
@@ -176,21 +176,21 @@ const STORE = [
       "All the information you need to get the best possible start with reading sheet music.",
       "By the end you'll understand how to read notes and rhythms, what every symbol means, and the methods for learning to read quickly, so you can approach any piece and know exactly what to do.",
       "Available as a digital download.",
-    ], gallery:["beginners-guide-reading-sheet-music-2","beginners-guide-reading-sheet-music-3"], samples:["beginners-guide-reading-sheet-music-sample-1"] },
+    ], samples:["beginners-guide-reading-sheet-music-sample-1","beginners-guide-reading-sheet-music-sample-2"] },
 
   { slug:"playing-by-ear-theory", title:"Playing by Ear: Theory Exercises", collection:"books", type:"pdf", price:799,
     tagline:"The theory you need to start playing by ear.",
     blurb:[
       "Theory exercises designed to help you understand music well enough to start playing the piano by ear.",
       "Covers locating notes on the piano, sharps and flats, tones and semitones, major and minor scales, the three types of minor, and working out scales from a selection of notes.",
-    ], gallery:["playing-by-ear-theory-2"], samples:["playing-by-ear-theory-sample-1"] },
+    ], samples:["playing-by-ear-theory-sample-1","playing-by-ear-theory-sample-2"] },
 
   { slug:"30-ways-to-play-a-chord", title:"30 Ways to Play a Chord", collection:"books", type:"pdf", price:799,
     tagline:"30 patterns to play any chord more musically.",
     blurb:[
       "30 chord patterns you can use with any triad, each shown with both a C major and a D major triad.",
       "Includes several chord sequences to practise the patterns. Based on Matthew's YouTube video '30 Ways to Play a Chord'.",
-    ], samples:["30-ways-to-play-a-chord-sample-1"] },
+    ], samples:["30-ways-to-play-a-chord-sample-1","30-ways-to-play-a-chord-sample-2"] },
 
   { slug:"4-fun-techniques", title:"4 Fun Techniques to Transform Your Playing", collection:"resources", type:"pdf", price:0,
     tagline:"Four exercises to level up your technique.",
@@ -297,7 +297,10 @@ const STORE_CSS = `<style>
 .product-detail .pd-gallery .pd-cover{position:relative;top:auto}
 .pd-sample-badge{position:absolute;top:10px;left:10px;background:rgba(10,10,11,.82);color:var(--gold-dim);border:1px solid var(--border-2);font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:8px;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 .pd-sample-badge[hidden]{display:none}
-.pd-sample-veil{position:absolute;left:0;right:0;bottom:0;height:56%;pointer-events:none;display:flex;align-items:flex-end;justify-content:center;padding-bottom:16px;background:linear-gradient(to bottom,rgba(255,255,255,0) 0%,rgba(255,255,255,.5) 30%,rgba(255,255,255,.95) 72%,#fff 100%);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 34%);mask-image:linear-gradient(to bottom,transparent 0%,#000 34%)}
+/* Sample pages have the blur/fade baked into the image file itself (so a right-click
+   "save image" downloads the obscured version, not a clean page). This veil now only
+   positions the caption over the already-faded lower area. */
+.pd-sample-veil{position:absolute;left:0;right:0;bottom:0;pointer-events:none;display:flex;align-items:flex-end;justify-content:center;padding-bottom:18px}
 .pd-sample-veil[hidden]{display:none}
 .pd-sample-veil span{font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-dim);background:rgba(10,10,11,.78);border:1px solid var(--border-2);padding:5px 11px;border-radius:8px}
 .pd-thumb.is-sample{box-shadow:inset 0 -3px 0 var(--gold-deep)}
