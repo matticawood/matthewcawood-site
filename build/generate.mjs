@@ -706,6 +706,18 @@ function storeLearnPage(){
       var ICON_BOX='<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 9h18"/></svg>';
       function state(icon,title,msg){ root.innerHTML='<div class="learn-state">'+(icon||'')+'<h2>'+title+'</h2><p>'+msg+'</p></div>'; }
       if(!t){ titleEl.textContent="Course"; state(ICON_BOX,"Missing access link","Open the course from the link in your purchase email."); return; }
+      var sentProgress={};
+      function recordProgress(lesson,index,status){
+        if(!lesson||!lesson.id) return;
+        var k=index+":"+status; if(sentProgress[k]) return; sentProgress[k]=true;
+        try{
+          fetch(SUPA+"/functions/v1/course-progress",{
+            method:"POST", keepalive:true,
+            headers:{ "Content-Type":"application/json", apikey:ANON, Authorization:"Bearer "+ANON },
+            body:JSON.stringify({ token:t, lessonId:lesson.id, lessonIndex:index, lessonTitle:lesson.title, status:status })
+          }).catch(function(){});
+        }catch(_){}
+      }
       function fmtDur(m){ return m? (m+" min"):""; }
       fetch(SUPA+"/functions/v1/store-access?token="+encodeURIComponent(t)+"&format=json",{headers:{apikey:ANON,Authorization:"Bearer "+ANON}})
         .then(function(r){return r.json();})
@@ -732,6 +744,9 @@ function storeLearnPage(){
             [].forEach.call(nav.querySelectorAll(".lrow"),function(b){ b.classList.toggle("active", b.getAttribute("data-i")==String(i)); });
             document.getElementById("prev-l").style.visibility=i>0?"visible":"hidden";
             document.getElementById("next-l").style.visibility=i<total-1?"visible":"hidden";
+            recordProgress(l,i,"viewed");
+            try{ [].forEach.call(content.querySelectorAll("mux-player"),function(mp){
+              mp.addEventListener("ended",function(){ recordProgress(l,i,"completed"); },{once:true}); }); }catch(_){}
             try{ window.scrollTo({top:0,behavior:"smooth"}); }catch(_){}
           }
           nav.addEventListener("click",function(e){ var b=e.target.closest(".lrow"); if(!b)return; show(parseInt(b.getAttribute("data-i"),10)); });
