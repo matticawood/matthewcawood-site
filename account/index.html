@@ -239,12 +239,17 @@ async function renderLessons(email){
   }catch(e){}
   try{
     const nowISO = new Date().toISOString();
-    const { data } = await sb.from("bookings").select("cal_uid,start_time,meeting_url,kind,status").gte("start_time", nowISO).order("start_time",{ascending:true});
+    const { data } = await sb.from("bookings").select("cal_uid,start_time,meeting_url,kind,status,event_type_id").gte("start_time", nowISO).order("start_time",{ascending:true});
+    // Friendly lesson-type names, matching the app booking page. kind is stored as
+    // "20min"/"30min"/"60min" (a redeemed package lesson is also "60min"); event_type_id
+    // is the fallback.
+    const KMAP = { "20min":"20-minute clinic", "30min":"30-minute clinic", "60min":"1-hour lesson" };
+    const EMAP = { "5482429":"20-minute clinic", "5482430":"30-minute clinic", "5982378":"1-hour lesson" };
     for(const b of (data||[])){
       if(!b.start_time) continue;
       if((b.status||"").toLowerCase()==="cancelled") continue;
       const when = new Date(b.start_time).toLocaleString("en-GB",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
-      const kind = b.kind==="package" ? "Lesson" : (b.kind||"Lesson").replace("min"," min");
+      const kind = KMAP[b.kind] || EMAP[String(b.event_type_id||"")] || "1-hour lesson";
       const zoom = b.meeting_url ? `<a class="lk" href="${esc(b.meeting_url)}" target="_blank" rel="noopener">Join →</a>` : "";
       const manage = b.cal_uid ? `<a class="lk ghost" href="/manage/?uid=${encodeURIComponent(b.cal_uid)}">Manage</a>` : "";
       bookingsHtml += `<div class="row"><div class="rb"><div class="rt">${esc(kind)}</div><div class="rm">${esc(when)}</div></div>${zoom}${manage}</div>`;
