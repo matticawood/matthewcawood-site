@@ -7,6 +7,30 @@
 [build.environment]
   NODE_VERSION = "20"
 
+# Specific old Shopify PRODUCT pages → the exact new book page. These MUST come
+# before the store.matthewcawood.com/* catch-all below (first match wins),
+# otherwise they'd land on the storefront instead of the book.
+[[redirects]]
+  from = "https://store.matthewcawood.com/products/beginner-sight-reading-exercises-book-420-exercises"
+  to = "https://matthewcawood.com/store/beginner-sight-reading-book/"
+  status = 301
+  force = true
+[[redirects]]
+  from = "http://store.matthewcawood.com/products/beginner-sight-reading-exercises-book-420-exercises"
+  to = "https://matthewcawood.com/store/beginner-sight-reading-book/"
+  status = 301
+  force = true
+[[redirects]]
+  from = "https://store.matthewcawood.com/products/beginners-guide-to-reading-sheet-music"
+  to = "https://matthewcawood.com/store/beginners-guide-reading-sheet-music/"
+  status = 301
+  force = true
+[[redirects]]
+  from = "http://store.matthewcawood.com/products/beginners-guide-to-reading-sheet-music"
+  to = "https://matthewcawood.com/store/beginners-guide-reading-sheet-music/"
+  status = 301
+  force = true
+
 # Old Shopify store subdomain → new storefront.
 # store.matthewcawood.com is added as a domain alias on this Netlify site; all of
 # its traffic 301s to /store/. Shopify paths (/products, /collections) don't map
@@ -35,3 +59,73 @@
   from = "/mailing-list-sign-up/*"
   to = "/#subscribe"
   status = 302
+
+# ── Old Squarespace store product pages (still indexed by Google) → new store ──
+# Squarespace served products at /store/p/<slug> and later /oldstore/p/<slug>.
+# Those slugs differ from the new ones, so each known product 301s to its exact
+# new page; the catch-alls below send any other old store URL to the storefront.
+# Specific rules MUST come before the catch-alls (first match wins).
+
+# Beginner Sight Reading Exercises Book
+[[redirects]]
+  from = "/store/p/beginner-sight-reading-exercises-book-420-exercises"
+  to = "/store/beginner-sight-reading-book/"
+  status = 301
+[[redirects]]
+  from = "/oldstore/p/beginner-sight-reading-exercises-book-420-exercises"
+  to = "/store/beginner-sight-reading-book/"
+  status = 301
+
+# Beginners Guide to Reading Sheet Music
+[[redirects]]
+  from = "/store/p/beginners-guide-to-reading-sheet-music"
+  to = "/store/beginners-guide-reading-sheet-music/"
+  status = 301
+[[redirects]]
+  from = "/oldstore/p/beginners-guide-to-reading-sheet-music"
+  to = "/store/beginners-guide-reading-sheet-music/"
+  status = 301
+
+# 4 Levels of Chord Patterns
+[[redirects]]
+  from = "/store/p/4-levels-of-chord-patterns-on-the-piano"
+  to = "/store/4-levels-chord-patterns/"
+  status = 301
+[[redirects]]
+  from = "/oldstore/p/4-levels-of-chord-patterns-on-the-piano"
+  to = "/store/4-levels-chord-patterns/"
+  status = 301
+
+# 4 Fun Techniques
+[[redirects]]
+  from = "/store/p/4-fun-techniques-that-will-transform-your-piano-playing"
+  to = "/store/4-fun-techniques/"
+  status = 301
+[[redirects]]
+  from = "/oldstore/p/4-fun-techniques-that-will-transform-your-piano-playing"
+  to = "/store/4-fun-techniques/"
+  status = 301
+
+# Playing by Ear Theory Exercises
+[[redirects]]
+  from = "/store/p/playingbyearmusictheory"
+  to = "/store/playing-by-ear-theory/"
+  status = 301
+[[redirects]]
+  from = "/oldstore/p/playingbyearmusictheory"
+  to = "/store/playing-by-ear-theory/"
+  status = 301
+
+# Catch-all: any other old product / category page → the storefront (no 404s)
+[[redirects]]
+  from = "/store/p/*"
+  to = "/store/"
+  status = 301
+[[redirects]]
+  from = "/oldstore/*"
+  to = "/store/"
+  status = 301
+[[redirects]]
+  from = "/oldstore"
+  to = "/store/"
+  status = 301
