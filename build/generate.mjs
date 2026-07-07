@@ -231,8 +231,8 @@ const STORE = [
 // ── Funnel helpers: authority proof, cross-sell map, membership ──────────
 const MEMBERSHIP_URL = "https://app.matthewcawood.com/signup";
 const AUTHORITY = [
-  ["143K", "YouTube subscribers"],
-  ["40M+", "Video views"],
+  ["144K", "YouTube subscribers"],
+  ["42M+", "Video views"],
   ["1,000s", "Students taught"],
 ];
 // "Pairs well with" — companion products shown at full price (no discount).
