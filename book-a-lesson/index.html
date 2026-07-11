@@ -307,9 +307,11 @@
   <div class="screen narrow-form" id="screen-redeem-email">
     <button class="back" onclick="show('screen-products')">← All options</button>
     <h2 style="margin-bottom:6px">Use your lesson package</h2>
-    <p class="muted" style="margin:0 0 18px">Enter the email you bought your package with and we'll show how many lessons you have left.</p>
+    <p class="muted" style="margin:0 0 18px">Enter the email you bought your package with. We'll send a quick verification code to confirm it's you, then show your lessons.</p>
     <div class="field"><label>Email</label><input type="email" id="rd-email" autocomplete="email"></div>
-    <button class="btn" id="rd-btn" style="margin-top:16px" onclick="checkCredits()">Check my lessons →</button>
+    <div class="field" id="rd-code-field" style="display:none"><label>Verification code</label><input type="text" id="rd-code" inputmode="numeric" autocomplete="one-time-code" placeholder="6-digit code"></div>
+    <button class="btn" id="rd-btn" style="margin-top:16px" onclick="redeemAuthStep()">Send me a code →</button>
+    <p class="muted" id="rd-hint" style="display:none;font-size:.82rem;margin-top:10px">We've emailed a 6-digit code to your address. Enter it above to continue.</p>
     <div class="err" id="rd-err"></div>
   </div>
 
@@ -412,6 +414,8 @@ let mode = "single";        // 'single' | 'redeem'
 let clinic = null;          // selected product
 let redeemEmail = "";
 let redeemToken = "";       // set when arriving via a ?redeem=<token> link (proof of ownership)
+let sessionToken = "";      // OTP-verified access token, when redeeming via email login
+let redeemAuthPhase = "email"; // 'email' | 'code'
 let basket = [];            // redeem mode: ISO slots queued to book together
 let redeemRemaining = 0;    // package credits available
 let calYear, calMonth, selDate=null, selSlot=null, monthAvail=null, loadingAvail=false, selFiles=[];
@@ -484,19 +488,44 @@ async function buyPackage(){
 }
 
 // ── redeem ──
-async function checkCredits(){
-  const email=document.getElementById("rd-email").value.trim().toLowerCase();
+// Manual redeem path: prove the email is yours with an OTP code (no typed-email
+// trust). Step 1 sends a code; step 2 verifies it, giving a session we use to read
+// credits + book. (The ?redeem=<token> email link skips all this.)
+async function redeemAuthStep(){
   const err=document.getElementById("rd-err"); err.style.display="none";
+  const btn=document.getElementById("rd-btn");
+  const email=document.getElementById("rd-email").value.trim().toLowerCase();
   if(!/.+@.+\..+/.test(email)){ err.textContent="Please enter a valid email."; err.style.display="block"; return; }
-  const btn=document.getElementById("rd-btn"); btn.disabled=true; btn.innerHTML='<span class="spin dk"></span> Checking…';
+
+  if(redeemAuthPhase==="email"){
+    btn.disabled=true; btn.innerHTML='<span class="spin dk"></span> Sending…';
+    try{
+      const r=await fetch(`${SUPABASE_URL}/auth/v1/otp`,{method:"POST",headers:{apikey:SUPABASE_ANON,"Content-Type":"application/json"},body:JSON.stringify({email,create_user:true})});
+      if(!r.ok){ const d=await r.json().catch(()=>({})); throw new Error(d.msg||d.error_description||"Couldn't send the code, please try again."); }
+      redeemAuthPhase="code";
+      document.getElementById("rd-code-field").style.display="";
+      document.getElementById("rd-hint").style.display="";
+      document.getElementById("rd-email").readOnly=true;
+      btn.disabled=false; btn.innerHTML="Verify and continue →";
+      document.getElementById("rd-code").focus();
+    }catch(e){ err.textContent=e.message; err.style.display="block"; btn.disabled=false; btn.innerHTML="Send me a code →"; }
+    return;
+  }
+
+  const code=document.getElementById("rd-code").value.trim();
+  if(!/^\d{6}$/.test(code)){ err.textContent="Enter the 6-digit code from your email."; err.style.display="block"; return; }
+  btn.disabled=true; btn.innerHTML='<span class="spin dk"></span> Verifying…';
   try{
-    const res=await fetch(`${FN}/lesson-credits?email=${encodeURIComponent(email)}`,{headers:AUTH});
-    const data=await res.json();
-    if((data.remaining||0)<=0){ err.textContent="No lessons found for that email. If you've just bought a package, give it a minute and try again."; err.style.display="block"; return; }
+    const vr=await fetch(`${SUPABASE_URL}/auth/v1/verify`,{method:"POST",headers:{apikey:SUPABASE_ANON,"Content-Type":"application/json"},body:JSON.stringify({type:"email",email,token:code})});
+    const vd=await vr.json().catch(()=>({}));
+    if(!vr.ok || !vd.access_token){ throw new Error(vd.msg||vd.error_description||"That code wasn't right, please try again."); }
+    sessionToken=vd.access_token;
+    const cr=await fetch(`${FN}/lesson-credits`,{headers:{apikey:SUPABASE_ANON,"Authorization":`Bearer ${sessionToken}`}});
+    const cd=await cr.json();
+    if((cd.remaining||0)<=0){ err.textContent="No lessons found for this email. If you've just bought a package, give it a minute and try again."; err.style.display="block"; btn.disabled=false; btn.innerHTML="Verify and continue →"; return; }
     if(!EVENT_1HR){ err.textContent="Lesson booking isn't quite set up yet, please contact Matthew to schedule."; err.style.display="block"; return; }
-    redeemEmail=email; redeemToken=""; redeemRemaining=data.remaining||0; basket=[]; mode="redeem"; clinic=PRODUCTS.l60; startBooking();
-  }catch(e){ err.textContent="Something went wrong, please try again."; err.style.display="block"; }
-  finally{ btn.disabled=false; btn.innerHTML="Check my lessons →"; }
+    redeemEmail=email; redeemToken=""; redeemRemaining=cd.remaining||0; basket=[]; mode="redeem"; clinic=PRODUCTS.l60; startBooking();
+  }catch(e){ err.textContent=e.message; err.style.display="block"; btn.disabled=false; btn.innerHTML="Verify and continue →"; }
 }
 
 // Arriving from the "package is ready" email link (/book-a-lesson/?redeem=<token>).
@@ -659,7 +688,8 @@ async function confirmBooking(){
     if(selFiles.length){ try{ fileUrl=(await Promise.all(selFiles.map(uploadAttachment))).join(", "); }catch(_){} }
     if(mode==="redeem"){
       const slots = (basket.length ? basket : [selSlot]).map(t=>new Date(t).toISOString());
-      const res=await fetch(`${FN}/lesson-redeem`,{method:"POST",headers:AUTH,body:JSON.stringify({ email, redeem_token: redeemToken||undefined, eventTypeId:clinic.id, slots, name:fname, timeZone:userTZ, notes:notes||undefined, fileUrl:fileUrl||undefined })});
+      const redeemHeaders = sessionToken ? { "Authorization":`Bearer ${sessionToken}`, "Content-Type":"application/json" } : AUTH;
+      const res=await fetch(`${FN}/lesson-redeem`,{method:"POST",headers:redeemHeaders,body:JSON.stringify({ email, redeem_token: redeemToken||undefined, eventTypeId:clinic.id, slots, name:fname, timeZone:userTZ, notes:notes||undefined, fileUrl:fileUrl||undefined })});
       const data=await res.json();
       if(!res.ok || data.error) throw new Error(data.error||"Booking failed");
       const n=data.booked||slots.length;
