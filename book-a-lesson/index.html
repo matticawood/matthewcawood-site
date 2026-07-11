@@ -721,7 +721,7 @@ function result(icon,title,msg){ document.getElementById("res-emoji").innerHTML=
     const val=(q.get("redeem")||"").trim();
     const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if(UUID.test(val)) enterRedeemByToken(val);
-    else if(/.+@.+\..+/.test(val)){ document.getElementById("rd-email").value=val.toLowerCase(); show("screen-redeem-email"); checkCredits(); }
+    else { show("screen-redeem-email"); if(/.+@.+\..+/.test(val)) document.getElementById("rd-email").value=val.toLowerCase(); }
   }
 })();
 </script>

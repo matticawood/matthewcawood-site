@@ -233,9 +233,16 @@ async function renderLessons(email){
   const el=$("lessons");
   let creditsHtml="", bookingsHtml="";
   try{
-    const r = await fetch(`${FN}/lesson-credits?email=${encodeURIComponent(email)}`, { headers:{ Authorization:`Bearer ${ANON}` } });
-    const j = await r.json();
-    if(j && j.remaining>0) creditsHtml = `<div class="row"><div class="rb"><div class="rt">${j.remaining} lesson${j.remaining===1?"":"s"} remaining</div><div class="rm">From your lesson package</div></div><a class="lk" href="/book-a-lesson/?redeem=${encodeURIComponent(email)}">Book ${j.remaining>1?"lessons":"one"} →</a></div>`;
+    // Read the signed-in customer's own credits (self-read RLS) so we get the
+    // remaining count AND a redeem token for the booking link, in one go.
+    const yearAgo = new Date(Date.now() - 365*24*60*60*1000).toISOString();
+    const { data: creds } = await sb.from("lesson_credits").select("remaining,redeem_token,created_at").gt("created_at", yearAgo);
+    const remaining = (creds||[]).reduce((s,c)=>s+(Number(c.remaining)||0),0);
+    const tok = (creds||[]).find(c=>c.redeem_token)?.redeem_token || "";
+    if(remaining>0){
+      const bookHref = tok ? `/book-a-lesson/?redeem=${encodeURIComponent(tok)}` : "/book-a-lesson/";
+      creditsHtml = `<div class="row"><div class="rb"><div class="rt">${remaining} lesson${remaining===1?"":"s"} remaining</div><div class="rm">From your lesson package</div></div><a class="lk" href="${bookHref}">Book ${remaining>1?"lessons":"one"} →</a></div>`;
+    }
   }catch(e){}
   try{
     const nowISO = new Date().toISOString();
