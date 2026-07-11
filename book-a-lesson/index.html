@@ -411,6 +411,7 @@ function onTzChange(tz){
 let mode = "single";        // 'single' | 'redeem'
 let clinic = null;          // selected product
 let redeemEmail = "";
+let redeemToken = "";       // set when arriving via a ?redeem=<token> link (proof of ownership)
 let basket = [];            // redeem mode: ISO slots queued to book together
 let redeemRemaining = 0;    // package credits available
 let calYear, calMonth, selDate=null, selSlot=null, monthAvail=null, loadingAvail=false, selFiles=[];
@@ -493,9 +494,21 @@ async function checkCredits(){
     const data=await res.json();
     if((data.remaining||0)<=0){ err.textContent="No lessons found for that email. If you've just bought a package, give it a minute and try again."; err.style.display="block"; return; }
     if(!EVENT_1HR){ err.textContent="Lesson booking isn't quite set up yet, please contact Matthew to schedule."; err.style.display="block"; return; }
-    redeemEmail=email; redeemRemaining=data.remaining||0; basket=[]; mode="redeem"; clinic=PRODUCTS.l60; startBooking();
+    redeemEmail=email; redeemToken=""; redeemRemaining=data.remaining||0; basket=[]; mode="redeem"; clinic=PRODUCTS.l60; startBooking();
   }catch(e){ err.textContent="Something went wrong, please try again."; err.style.display="block"; }
   finally{ btn.disabled=false; btn.innerHTML="Check my lessons →"; }
+}
+
+// Arriving from the "package is ready" email link (/book-a-lesson/?redeem=<token>).
+// The token proves ownership of the email, so we skip the type-your-email step.
+async function enterRedeemByToken(token){
+  try{
+    const res=await fetch(`${FN}/lesson-credits?token=${encodeURIComponent(token)}`,{headers:AUTH});
+    const data=await res.json();
+    if((data.remaining||0)<=0){ result(IC_UNDO,"No lessons left on this link","This booking link has no lessons remaining on it. If that's not right, contact Matthew and he'll sort it out."); return; }
+    if(!EVENT_1HR){ result(IC_UNDO,"Booking not available yet","Lesson booking isn't quite set up, please contact Matthew to schedule."); return; }
+    redeemToken=token; redeemEmail=data.email||""; redeemRemaining=data.remaining||0; basket=[]; mode="redeem"; clinic=PRODUCTS.l60; startBooking();
+  }catch(e){ result(IC_UNDO,"Something went wrong","Couldn't open your booking link, please try again or contact Matthew."); }
 }
 
 // ── calendar / slots (ported from the Practice Room booking engine) ──
@@ -646,7 +659,7 @@ async function confirmBooking(){
     if(selFiles.length){ try{ fileUrl=(await Promise.all(selFiles.map(uploadAttachment))).join(", "); }catch(_){} }
     if(mode==="redeem"){
       const slots = (basket.length ? basket : [selSlot]).map(t=>new Date(t).toISOString());
-      const res=await fetch(`${FN}/lesson-redeem`,{method:"POST",headers:AUTH,body:JSON.stringify({ email, eventTypeId:clinic.id, slots, name:fname, timeZone:userTZ, notes:notes||undefined, fileUrl:fileUrl||undefined })});
+      const res=await fetch(`${FN}/lesson-redeem`,{method:"POST",headers:AUTH,body:JSON.stringify({ email, redeem_token: redeemToken||undefined, eventTypeId:clinic.id, slots, name:fname, timeZone:userTZ, notes:notes||undefined, fileUrl:fileUrl||undefined })});
       const data=await res.json();
       if(!res.ok || data.error) throw new Error(data.error||"Booking failed");
       const n=data.booked||slots.length;
@@ -675,8 +688,10 @@ function result(icon,title,msg){ document.getElementById("res-emoji").innerHTML=
   if(q.get("success")) result(IC_DONE,"Payment received!","Thanks, your booking is confirmed and you'll get an email with the details shortly. If you bought a package, the email explains how to book each lesson.");
   else if(q.get("cancelled")) result(IC_UNDO,"Checkout cancelled","No payment was taken. You can pick another time whenever you're ready.");
   else if(q.get("redeem")){
-    const em=(q.get("redeem")||"").trim().toLowerCase();
-    if(/.+@.+\..+/.test(em)){ document.getElementById("rd-email").value=em; show("screen-redeem-email"); checkCredits(); }
+    const val=(q.get("redeem")||"").trim();
+    const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if(UUID.test(val)) enterRedeemByToken(val);
+    else if(/.+@.+\..+/.test(val)){ document.getElementById("rd-email").value=val.toLowerCase(); show("screen-redeem-email"); checkCredits(); }
   }
 })();
 </script>
