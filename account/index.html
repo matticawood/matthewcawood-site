@@ -231,7 +231,13 @@ async function renderPurchases(email){
 
 async function renderLessons(email){
   const el=$("lessons");
-  let creditsHtml="", bookingsHtml="";
+  // Friendly lesson-type names. kind is stored as "20min"/"30min"/"60min" (redeemed
+  // package lessons are "60min"); imported Acuity rows carry a readable kind already, so
+  // fall back to the kind string before the generic default.
+  const KMAP = { "20min":"20-minute clinic", "30min":"30-minute clinic", "60min":"1-hour lesson" };
+  const EMAP = { "5482429":"20-minute clinic", "5482430":"30-minute clinic", "5982378":"1-hour lesson" };
+  const label = b => KMAP[b.kind] || EMAP[String(b.event_type_id||"")] || b.kind || "1-hour lesson";
+  let creditsHtml="", bookingsHtml="", pastHtml="";
   try{
     // Read the signed-in customer's own credits (self-read RLS) so we get the
     // remaining count AND a redeem token for the booking link, in one go.
@@ -244,27 +250,31 @@ async function renderLessons(email){
       creditsHtml = `<div class="row"><div class="rb"><div class="rt">${remaining} lesson${remaining===1?"":"s"} remaining</div><div class="rm">From your lesson package</div></div><a class="lk" href="${bookHref}">Book ${remaining>1?"lessons":"one"} →</a></div>`;
     }
   }catch(e){}
+  const nowISO = new Date().toISOString();
   try{
-    const nowISO = new Date().toISOString();
     const { data } = await sb.from("bookings").select("cal_uid,start_time,meeting_url,kind,status,event_type_id").gte("start_time", nowISO).order("start_time",{ascending:true});
-    // Friendly lesson-type names, matching the app booking page. kind is stored as
-    // "20min"/"30min"/"60min" (a redeemed package lesson is also "60min"); event_type_id
-    // is the fallback.
-    const KMAP = { "20min":"20-minute clinic", "30min":"30-minute clinic", "60min":"1-hour lesson" };
-    const EMAP = { "5482429":"20-minute clinic", "5482430":"30-minute clinic", "5982378":"1-hour lesson" };
     for(const b of (data||[])){
-      if(!b.start_time) continue;
-      if((b.status||"").toLowerCase()==="cancelled") continue;
+      if(!b.start_time || (b.status||"").toLowerCase()==="cancelled") continue;
       const when = new Date(b.start_time).toLocaleString("en-GB",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
-      const kind = KMAP[b.kind] || EMAP[String(b.event_type_id||"")] || "1-hour lesson";
       const zoom = b.meeting_url ? `<a class="lk" href="${esc(b.meeting_url)}" target="_blank" rel="noopener">Join →</a>` : "";
       const manage = b.cal_uid ? `<a class="lk ghost" href="/manage/?uid=${encodeURIComponent(b.cal_uid)}">Manage</a>` : "";
-      bookingsHtml += `<div class="row"><div class="rb"><div class="rt">${esc(kind)}</div><div class="rm">${esc(when)}</div></div>${zoom}${manage}</div>`;
+      bookingsHtml += `<div class="row"><div class="rb"><div class="rt">${esc(label(b))}</div><div class="rm">${esc(when)}</div></div>${zoom}${manage}</div>`;
+    }
+  }catch(e){}
+  // Past lessons — the customer's history (new Cal.com bookings + imported Acuity),
+  // most recent first. RLS scopes this to the signed-in customer's own email.
+  try{
+    const { data: past } = await sb.from("bookings").select("cal_uid,start_time,kind,status,event_type_id").lt("start_time", nowISO).order("start_time",{ascending:false}).limit(300);
+    for(const b of (past||[])){
+      if(!b.start_time || (b.status||"").toLowerCase()==="cancelled") continue;
+      const when = new Date(b.start_time).toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short",year:"numeric"});
+      pastHtml += `<div class="row"><div class="rb"><div class="rt">${esc(label(b))}</div><div class="rm">${esc(when)}</div></div></div>`;
     }
   }catch(e){}
   const cta = `<div class="row"><div class="rb"><div class="rt">Book a lesson or clinic</div><div class="rm">20-min clinic, 30-min clinic, or a full hour</div></div><a class="lk ghost" href="/book-a-lesson/">Book →</a></div>`;
-  const body = (bookingsHtml||creditsHtml) ? (bookingsHtml + creditsHtml + cta) : (`<p class="empty" style="margin:0 0 6px">No upcoming lessons.</p>` + cta);
-  el.innerHTML = body;
+  const pastSection = pastHtml ? `<div style="font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;opacity:.5;margin:18px 0 8px">Past lessons</div>${pastHtml}` : "";
+  const upcomingBlock = (bookingsHtml||creditsHtml) || `<p class="empty" style="margin:0 0 6px">No upcoming lessons.</p>`;
+  el.innerHTML = upcomingBlock + pastSection + cta;
 }
 
 async function renderMembership(email){
