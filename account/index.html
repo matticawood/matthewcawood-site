@@ -272,19 +272,16 @@ async function renderLessons(email){
     }
   }catch(e){}
   const cta = `<div class="row"><div class="rb"><div class="rt">Book a lesson or clinic</div><div class="rm">20-min clinic, 30-min clinic, or a full hour</div></div><a class="lk ghost" href="/book-a-lesson/">Book →</a></div>`;
-  // Past lessons: show the most recent few, collapse the rest behind a "Show all N" toggle.
+  // Past lessons live fully collapsed behind a single toggle row so they never push
+  // the Book CTA (or the membership panel below) off-screen. One line until clicked.
   let pastSection = "";
   if(pastRows.length){
-    const N=6, head=`<div style="font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;opacity:.5;margin:18px 0 8px">Past lessons · ${pastRows.length}</div>`;
-    if(pastRows.length<=N){ pastSection = head + pastRows.join(""); }
-    else{
-      pastSection = head + pastRows.slice(0,N).join("")
-        + `<div id="past-more" style="display:none">${pastRows.slice(N).join("")}</div>`
-        + `<button class="lk ghost" style="display:block;width:100%;text-align:center;margin-top:8px;background:none;border:none;cursor:pointer;font:inherit" onclick="var m=document.getElementById('past-more');var o=m.style.display==='none';m.style.display=o?'':'none';this.textContent=o?'Show fewer':'Show all ${pastRows.length} lessons';">Show all ${pastRows.length} lessons</button>`;
-    }
+    pastSection = `<button id="past-toggle" class="row" style="width:100%;text-align:left;background:none;border:none;border-top:1px solid rgba(255,255,255,.08);cursor:pointer;font:inherit;color:inherit;margin-top:6px" onclick="var m=document.getElementById('past-more');var o=m.style.display==='none';m.style.display=o?'':'none';document.getElementById('past-caret').textContent=o?'▲':'▼';">`
+      + `<div class="rb"><div class="rt">Lesson history</div><div class="rm">${pastRows.length} past lesson${pastRows.length===1?"":"s"}</div></div><span id="past-caret" class="rm" style="opacity:.6">▼</span></button>`
+      + `<div id="past-more" style="display:none">${pastRows.join("")}</div>`;
   }
   const upcomingBlock = (bookingsHtml||creditsHtml) || `<p class="empty" style="margin:0 0 6px">No upcoming lessons.</p>`;
-  el.innerHTML = upcomingBlock + pastSection + cta;
+  el.innerHTML = upcomingBlock + cta + pastSection;
 }
 
 async function renderMembership(email){
