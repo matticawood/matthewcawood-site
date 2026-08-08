@@ -242,12 +242,19 @@ async function renderLessons(email){
     // Read the signed-in customer's own credits (self-read RLS) so we get the
     // remaining count AND a redeem token for the booking link, in one go.
     const yearAgo = new Date(Date.now() - 365*24*60*60*1000).toISOString();
-    const { data: creds } = await sb.from("lesson_credits").select("remaining,redeem_token,created_at").gt("created_at", yearAgo);
-    const remaining = (creds||[]).reduce((s,c)=>s+(Number(c.remaining)||0),0);
-    const tok = (creds||[]).find(c=>c.redeem_token)?.redeem_token || "";
+    const { data: creds } = await sb.from("lesson_credits").select("remaining,redeem_token,created_at");
+    // A package is bookable only while it has lessons left AND is under 12 months old.
+    const active = (creds||[]).filter(c=>(Number(c.remaining)||0)>0 && c.created_at>yearAgo);
+    const remaining = active.reduce((s,c)=>s+(Number(c.remaining)||0),0);
+    const tok = active.find(c=>c.redeem_token)?.redeem_token || "";
     if(remaining>0){
       const bookHref = tok ? `/book-a-lesson/?redeem=${encodeURIComponent(tok)}` : "/book-a-lesson/";
       creditsHtml = `<div class="row"><div class="rb"><div class="rt">${remaining} lesson${remaining===1?"":"s"} remaining</div><div class="rm">From your lesson package</div></div><a class="lk" href="${bookHref}">Book ${remaining>1?"lessons":"one"} →</a></div>`;
+    } else if((creds||[]).length){
+      // Had a package before, but it is now used up or expired. Say so rather than showing nothing.
+      const expired = (creds||[]).some(c=>(Number(c.remaining)||0)>0);
+      const sub = expired ? "Your package has expired (packages last 12 months)" : "You've used all the lessons in your package";
+      creditsHtml = `<div class="row"><div class="rb"><div class="rt">No package lessons remaining</div><div class="rm">${sub}</div></div><a class="lk" href="/book-a-lesson/">Book more →</a></div>`;
     }
   }catch(e){}
   const nowISO = new Date().toISOString();
