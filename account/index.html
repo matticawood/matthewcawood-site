@@ -57,6 +57,12 @@
   .lk:hover{background:var(--gold-dim);transform:translateY(-1px)}
   .lk.ghost{background:transparent;border:1.5px solid var(--border-2);color:var(--text)}
   .lk.ghost:hover{border-color:var(--accent);background:rgba(245,197,24,.06);transform:none}
+  /* compact lesson-history list — deliberately lighter than a .row so the toggle reads as a header */
+  .pl{padding:4px 0 2px}
+  .pl-row{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:7px 2px;font-size:.82rem;border-top:1px solid rgba(255,255,255,.045)}
+  .pl-row:first-child{border-top:none}
+  .pl-row .pl-t{color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pl-row .pl-d{color:var(--muted);font-size:.76rem;white-space:nowrap;flex:none;font-variant-numeric:tabular-nums}
   .empty{color:var(--muted);font-size:.92rem;margin:6px 0}
   .empty a{color:var(--gold-dim)}
 
@@ -274,8 +280,8 @@ async function renderLessons(email){
     const { data: past } = await sb.from("bookings").select("cal_uid,start_time,kind,status,event_type_id").lt("start_time", nowISO).order("start_time",{ascending:false}).limit(300);
     for(const b of (past||[])){
       if(!b.start_time || (b.status||"").toLowerCase()==="cancelled") continue;
-      const when = new Date(b.start_time).toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short",year:"numeric"});
-      pastRows.push(`<div class="row"><div class="rb"><div class="rt">${esc(label(b))}</div><div class="rm">${esc(when)}</div></div></div>`);
+      const when = new Date(b.start_time).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
+      pastRows.push(`<div class="pl-row"><span class="pl-t">${esc(label(b))}</span><span class="pl-d">${esc(when)}</span></div>`);
     }
   }catch(e){}
   const cta = `<div class="row"><div class="rb"><div class="rt">Book a lesson or clinic</div><div class="rm">20-min clinic, 30-min clinic, or a full hour</div></div><a class="lk ghost" href="/book-a-lesson/">Book →</a></div>`;
@@ -285,7 +291,7 @@ async function renderLessons(email){
   if(pastRows.length){
     pastSection = `<button id="past-toggle" class="row" style="width:100%;text-align:left;background:none;border:none;border-top:1px solid rgba(255,255,255,.08);cursor:pointer;font:inherit;color:inherit;margin-top:6px" onclick="var m=document.getElementById('past-more');var o=m.style.display==='none';m.style.display=o?'':'none';document.getElementById('past-caret').textContent=o?'▲':'▼';">`
       + `<div class="rb"><div class="rt">Lesson history</div><div class="rm">${pastRows.length} past lesson${pastRows.length===1?"":"s"}</div></div><span id="past-caret" class="rm" style="opacity:.6">▼</span></button>`
-      + `<div id="past-more" style="display:none">${pastRows.join("")}</div>`;
+      + `<div id="past-more" class="pl" style="display:none">${pastRows.join("")}</div>`;
   }
   const upcomingBlock = (bookingsHtml||creditsHtml) || `<p class="empty" style="margin:0 0 6px">No upcoming lessons.</p>`;
   el.innerHTML = upcomingBlock + cta + pastSection;
