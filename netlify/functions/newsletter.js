@@ -11,10 +11,31 @@ const fail = (c=400, m="Bad request") => ({ statusCode: c, headers, body: JSON.s
 exports.handler = async (evt) => {
   if (evt.httpMethod === "OPTIONS") return { statusCode: 204, headers, body: "" };
   if (evt.httpMethod !== "POST") return fail(405, "Method not allowed");
-  let email, source;
-  try { const b = JSON.parse(evt.body || "{}"); email = String(b.email||"").trim().toLowerCase(); source = String(b.source||"site").slice(0,40); }
+  let email, source, token, hp;
+  try { const b = JSON.parse(evt.body || "{}"); email = String(b.email||"").trim().toLowerCase(); source = String(b.source||"site").slice(0,40); token = String(b.token||""); hp = String(b.hp||"").trim(); }
   catch { return fail(400, "Bad JSON"); }
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return fail(400, "Invalid email");
+
+  // Honeypot: a hidden field no human fills. If it's populated, it's a bot —
+  // pretend success so the bot gets no signal, but do nothing.
+  if (hp) return ok();
+
+  // Cloudflare Turnstile verification (bot protection). Fails closed when configured:
+  // no valid token, no signup. Skipped only if the secret isn't set (e.g. local dev).
+  const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY;
+  if (TURNSTILE_SECRET) {
+    if (!token) return fail(400, "Verification required");
+    try {
+      const ip = evt.headers["x-nf-client-connection-ip"] || String(evt.headers["x-forwarded-for"]||"").split(",")[0].trim();
+      const vr = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(Object.assign({ secret: TURNSTILE_SECRET, response: token }, ip ? { remoteip: ip } : {})),
+      });
+      const vj = await vr.json();
+      if (!vj.success) return fail(403, "Verification failed");
+    } catch (e) { console.error("turnstile verify error:", e); return fail(502, "Verification error"); }
+  }
 
   // Add to email_contacts + the Monday Music Tips list (the campaign system the
   // sender reads from). Service role bypasses RLS. Contact must exist before the

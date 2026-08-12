@@ -103,9 +103,11 @@
     <h2>Join Monday Music Tips</h2>
     <p>One short, useful idea about playing and understanding music, every Monday. Loved by thousands of pianists.</p>
     <form class="subscribe" id="subscribe-form" onsubmit="return false">
+      <input type="text" name="company" id="sub-hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
       <input type="email" id="sub-email" placeholder="you@email.com" autocomplete="email" required>
       <button class="btn" type="submit" id="sub-btn">Subscribe</button>
     </form>
+    <div class="cf-turnstile" data-sitekey="0x4AAAAAAEOZTF1S4gLKYZ7l" data-size="flexible" style="margin-top:12px"></div>
     <div class="form-note" id="sub-note"></div>
   </div>
 </section>
@@ -159,16 +161,21 @@
   f.addEventListener('submit',async function(){
     var email=document.getElementById('sub-email').value.trim();
     if(!/.+@.+\..+/.test(email)){note.textContent='Please enter a valid email.';return;}
+    var token=(document.querySelector('[name="cf-turnstile-response"]')||{}).value||'';
+    if(!token){note.textContent='Please complete the verification below.';return;}
+    var hp=(document.getElementById('sub-hp')||{}).value||'';
     btn.disabled=true;note.textContent='Subscribing…';
     try{
-      var r=await fetch('/.netlify/functions/newsletter',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,source:'home'})});
-      if(r.ok){note.textContent='You\'re in! Check your inbox to confirm.';f.reset();}
+      var r=await fetch('/.netlify/functions/newsletter',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,source:'home',token:token,hp:hp})});
+      if(r.ok){note.textContent='You\'re in! Check your inbox.';f.reset();}
       else{note.textContent='Something went wrong, please try again.';}
     }catch(e){note.textContent='Something went wrong, please try again.';}
+    if(window.turnstile){try{turnstile.reset();}catch(_){}}
     btn.disabled=false;
   });
 })();
 </script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <script src="/assets/js/analytics.js?v=2" defer></script>
 <script src="/assets/reveal.js" defer></script>
 </body>
